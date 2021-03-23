@@ -183,6 +183,14 @@ function configureWebpack(terriaJSBasePath, config, devMode, hot, MiniCssExtract
         }
     });
 
+    config.module.rules.push(
+        {
+            test: /\.(eot|woff|woff2|svg|ttf)([\?]?.*)$/,
+            include: path.resolve(terriaJSBasePath, '..', 'lib', 'fonts'),
+            loader: "file-loader",
+        }
+    )
+
     config.devServer = config.devServer || {
         stats: 'minimal',
         port: 3003,
