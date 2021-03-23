@@ -321,7 +321,7 @@ const DateTimePicker = createReactClass({
     if (defined(items)) {
       return (
         <div className={Styles.grid}>
-          <div className={Styles.gridHeading}>Select a time</div>
+          <div className={Styles.gridHeading}>Selecciona una Fecha</div>
           <div className={Styles.gridBody}>
             {items.map(item => (
               <button
