@@ -1,6 +1,5 @@
 "use strict";
 
-/*global require*/
 var defined = require("terriajs-cesium/Source/Core/defined").default;
 
 function equals(util, customEqualityTesters, a, b) {
@@ -8,9 +7,9 @@ function equals(util, customEqualityTesters, a, b) {
 }
 
 module.exports = {
-  toEqualEpsilon: function(util, customEqualityTesters) {
+  toEqualEpsilon: function (util, customEqualityTesters) {
     return {
-      compare: function(actual, expected, epsilon) {
+      compare: function (actual, expected, epsilon) {
         function equalityTester(a, b) {
           var to_run;
           if (defined(a)) {

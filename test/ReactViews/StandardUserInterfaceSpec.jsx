@@ -1,6 +1,5 @@
 "use strict";
 
-/*global require,expect*/
 import React from "react";
 import { findWithClass } from "react-shallow-testutils";
 import { getShallowRenderedOutput } from "./MoreShallowTools";
@@ -11,12 +10,12 @@ import {
 import Terria from "../../lib/Models/Terria";
 import ViewState from "../../lib/ReactViewModels/ViewState";
 
-describe("StandardUserInterface", function() {
+describe("StandardUserInterface", function () {
   let terria;
   // let feature;
   let viewState;
 
-  beforeEach(function() {
+  beforeEach(function () {
     terria = new Terria({
       baseUrl: "./"
     });
@@ -25,7 +24,7 @@ describe("StandardUserInterface", function() {
     });
   });
 
-  it("has class story-wrapper", function() {
+  it("has class story-wrapper", function () {
     const ui = (
       <StandardUserInterface
         terria={terria}
@@ -37,7 +36,7 @@ describe("StandardUserInterface", function() {
     expect(result.props.className).toContain("story-wrapper");
   });
 
-  it("feature info panel has top-element class when it is the top element", function() {
+  it("feature info panel has top-element class when it is the top element", function () {
     viewState.topElement = "FeatureInfo";
     const ui = (
       <StandardUserInterface
@@ -54,7 +53,7 @@ describe("StandardUserInterface", function() {
     expect(featureInfo.props.className).toContain("top-element");
   });
 
-  it("side panel has top-element class when it is the top element", function() {
+  it("side panel has top-element class when it is the top element", function () {
     viewState.topElement = "SidePanel";
     const ui = (
       <StandardUserInterface
@@ -71,7 +70,7 @@ describe("StandardUserInterface", function() {
     expect(sidePanel.props.className).toContain("top-element");
   });
 
-  it("feature info panel does not have top-element class when it is not the top element", function() {
+  it("feature info panel does not have top-element class when it is not the top element", function () {
     viewState.topElement = "SidePanel";
     const ui = (
       <StandardUserInterface
@@ -88,13 +87,13 @@ describe("StandardUserInterface", function() {
     expect(featureInfo.props.className).not.toContain("top-element");
   });
 
-  it("shows story prompt when showFeaturePrompts is set to true in config file", function() {
+  it("shows story prompt when showFeaturePrompts is set to true in config file", function () {
     terria.configParameters.showFeaturePrompts = true;
     showStoryPrompt(viewState, terria);
     expect(viewState.featurePrompts).toContain("story");
   });
 
-  it("does not show story prompt when showFeaturePrompts is set to false in config file", function() {
+  it("does not show story prompt when showFeaturePrompts is set to false in config file", function () {
     terria.configParameters.showFeaturePrompts = false;
     showStoryPrompt(viewState, terria);
     expect(viewState.featurePrompts).not.toContain("story");

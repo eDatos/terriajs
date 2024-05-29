@@ -3,7 +3,6 @@
 import React from "react";
 import PropTypes from "prop-types";
 import defined from "terriajs-cesium/Source/Core/defined";
-import ObserveModelMixin from "../ObserveModelMixin";
 import Styles from "./parameter-editors.scss";
 import {
   selectOnMap as selectPointOnMap,
@@ -18,54 +17,61 @@ import {
   getDisplayValue as getExistingPolygonParameterDisplayValue
 } from "./SelectAPolygonParameterEditor";
 import { getDisplayValue as getRegionPickerDisplayValue } from "./RegionPicker";
-import createReactClass from "create-react-class";
-import GeoJsonParameter from "../../Models/GeoJsonParameter";
+import GeoJsonParameter from "../../Models/FunctionParameters/GeoJsonParameter";
 import { withTranslation } from "react-i18next";
+import { observer } from "mobx-react";
+import { runInAction } from "mobx";
+import CommonStrata from "../../Models/Definition/CommonStrata";
 
-const GeoJsonParameterEditor = createReactClass({
-  mixins: [ObserveModelMixin],
-
-  propTypes: {
+@observer
+class GeoJsonParameterEditor extends React.Component {
+  static propTypes = {
     previewed: PropTypes.object,
     parameter: PropTypes.object,
     viewState: PropTypes.object,
     t: PropTypes.func.isRequired
-  },
+  };
 
   onCleanUp() {
     this.props.viewState.openAddData();
-  },
+  }
 
   selectPointOnMap() {
-    this.props.parameter.value = undefined;
-    selectPointOnMap(
-      this.props.previewed.terria,
-      this.props.viewState,
-      this.props.parameter,
-      this.props.t("analytics.selectLocation")
-    );
-    this.props.parameter.subtype = GeoJsonParameter.PointType;
-  },
+    runInAction(() => {
+      this.props.parameter.setValue(CommonStrata.user, undefined);
+      selectPointOnMap(
+        this.props.previewed.terria,
+        this.props.viewState,
+        this.props.parameter,
+        this.props.t("analytics.selectLocation")
+      );
+      this.props.parameter.subtype = GeoJsonParameter.PointType;
+    });
+  }
 
   selectPolygonOnMap() {
-    this.props.parameter.value = undefined;
-    selectPolygonOnMap(
-      this.props.previewed.terria,
-      this.props.viewState,
-      this.props.parameter
-    );
-    this.props.parameter.subtype = GeoJsonParameter.PolygonType;
-  },
+    runInAction(() => {
+      this.props.parameter.setValue(CommonStrata.user, undefined);
+      selectPolygonOnMap(
+        this.props.previewed.terria,
+        this.props.viewState,
+        this.props.parameter
+      );
+      this.props.parameter.subtype = GeoJsonParameter.PolygonType;
+    });
+  }
 
   selectExistingPolygonOnMap() {
-    this.props.parameter.value = undefined;
-    selectExistingPolygonOnMap(
-      this.props.previewed.terria,
-      this.props.viewState,
-      this.props.parameter
-    );
-    this.props.parameter.subtype = GeoJsonParameter.SelectAPolygonType;
-  },
+    runInAction(() => {
+      this.props.parameter.setValue(CommonStrata.user, undefined);
+      selectExistingPolygonOnMap(
+        this.props.previewed.terria,
+        this.props.viewState,
+        this.props.parameter
+      );
+      this.props.parameter.subtype = GeoJsonParameter.SelectAPolygonType;
+    });
+  }
 
   render() {
     const { t } = this.props;
@@ -85,7 +91,7 @@ const GeoJsonParameterEditor = createReactClass({
         >
           <button
             type="button"
-            onClick={this.selectPointOnMap}
+            onClick={() => this.selectPointOnMap()}
             className={Styles.btnLocationSelector}
           >
             <strong>{t("analytics.point")}</strong>
@@ -93,14 +99,14 @@ const GeoJsonParameterEditor = createReactClass({
           <button
             type="button"
             style={{ marginLeft: "2%", marginRight: "2%" }}
-            onClick={this.selectPolygonOnMap}
+            onClick={() => this.selectPolygonOnMap()}
             className={Styles.btnLocationSelector}
           >
             <strong>{t("analytics.polygon")}</strong>
           </button>
           <button
             type="button"
-            onClick={this.selectExistingPolygonOnMap}
+            onClick={() => this.selectExistingPolygonOnMap()}
             className={Styles.btnLocationSelector}
           >
             <strong>{t("analytics.existingPolygon")}</strong>
@@ -115,20 +121,12 @@ const GeoJsonParameterEditor = createReactClass({
             this.props.parameter
           )}
         />
-        <If
-          condition={
-            getDisplayValue(
-              this.props.parameter.value,
-              this.props.parameter
-            ) === ""
-          }
-        >
-          <div>{t("analytics.nothingSelected")}</div>
-        </If>
+        {getDisplayValue(this.props.parameter.value, this.props.parameter) ===
+          "" && <div>{t("analytics.nothingSelected")}</div>}
       </div>
     );
   }
-});
+}
 
 function getDisplayValue(value, parameter) {
   if (!defined(parameter.subtype)) {

@@ -1,53 +1,38 @@
-import React from "react";
-
-import createReactClass from "create-react-class";
-
-import PropTypes from "prop-types";
-
 import naturalSort from "javascript-natural-sort";
+import { runInAction } from "mobx";
+import { observer } from "mobx-react";
+import Mustache from "mustache";
+import PropTypes from "prop-types";
+import React from "react";
+import { withTranslation } from "react-i18next";
+import isDefined from "../../Core/isDefined";
+import CommonStrata from "../../Models/Definition/CommonStrata";
+import Box from "../../Styled/Box";
+import Collapsible from "../Custom/Collapsible/Collapsible";
 import parseCustomMarkdownToReact from "../Custom/parseCustomMarkdownToReact";
-import ObserveModelMixin from "../ObserveModelMixin";
-
-import Styles from "./data-preview.scss";
+import MetadataTable from "./MetadataTable";
 
 naturalSort.insensitive = true;
-import { withTranslation } from "react-i18next";
+
+Mustache.escape = function (string) {
+  return string;
+};
 
 /**
  * CatalogItem-defined sections that sit within the preview description. These are ordered according to the catalog item's
  * order if available.
  */
-const DataPreviewSections = createReactClass({
-  displayName: "DataPreviewSections",
-  mixins: [ObserveModelMixin],
-
-  propTypes: {
+@observer
+class DataPreviewSections extends React.Component {
+  static propTypes = {
     metadataItem: PropTypes.object.isRequired,
     t: PropTypes.func.isRequired
-  },
+  };
 
   sortInfoSections(items) {
-    const { t } = this.props;
-    // Should get it from option
-    const DEFAULT_SECTION_ORDER = [
-      t("preview.disclaimer"),
-      t("description.name"),
-      t("preview.dataDescription"),
-      t("preview.datasetDescription"),
-      t("preview.serviceDescription"),
-      t("preview.resourceDescription"),
-      t("preview.licence"),
-      t("preview.accessConstraints"),
-      t("preview.author"),
-      t("preview.contact"),
-      t("preview.created"),
-      t("preview.modified"),
-      t("preview.updateFrequency")
-    ];
-    const infoSectionOrder =
-      this.props.metadataItem.infoSectionOrder || DEFAULT_SECTION_ORDER;
+    const infoSectionOrder = this.props.metadataItem.infoSectionOrder;
 
-    items.sort(function(a, b) {
+    items.sort(function (a, b) {
       const aIndex = infoSectionOrder.indexOf(a.name);
       const bIndex = infoSectionOrder.indexOf(b.name);
       if (aIndex >= 0 && bIndex < 0) {
@@ -60,8 +45,25 @@ const DataPreviewSections = createReactClass({
       return aIndex - bIndex;
     });
 
-    return items;
-  },
+    return items.filter(
+      (item) =>
+        isDefined(item.content ?? item.contentAsObject) &&
+        (item.content ?? item.contentAsObject) !== null &&
+        item.content !== ""
+    );
+  }
+
+  clickInfoSection(reportName, isOpen) {
+    const info = this.props.metadataItem.info;
+    const clickedInfo = info.find((report) => report.name === reportName);
+
+    if (isDefined(clickedInfo)) {
+      runInAction(() => {
+        clickedInfo.setTrait(CommonStrata.user, "show", isOpen);
+      });
+    }
+    return false;
+  }
 
   render() {
     const metadataItem = this.props.metadataItem;
@@ -69,21 +71,48 @@ const DataPreviewSections = createReactClass({
       ? metadataItem.infoWithoutSources
       : metadataItem.info.slice();
 
+    const renderSection = (item) => {
+      let content = item.content;
+      try {
+        content = Mustache.render(content, metadataItem);
+      } catch (error) {
+        console.log(
+          `FAILED to parse info section ${item.name} for ${metadataItem.name}`
+        );
+        console.log(error);
+      }
+      return parseCustomMarkdownToReact(content, {
+        catalogItem: metadataItem
+      });
+    };
+
     return (
       <div>
-        <For each="item" index="i" of={this.sortInfoSections(items)}>
-          <If condition={item.content && item.content.length > 0}>
-            <div key={i}>
-              <h4 className={Styles.h4}>{item.name}</h4>
-              {parseCustomMarkdownToReact(item.content, {
-                catalogItem: metadataItem
-              })}
-            </div>
-          </If>
-        </For>
+        {this.sortInfoSections(items).map((item, i) => (
+          <Box paddedVertically displayInlineBlock fullWidth key={i}>
+            <Collapsible
+              key={i}
+              light={false}
+              title={item.name}
+              isOpen={item.show}
+              onToggle={(show) =>
+                this.clickInfoSection.bind(this, item.name, show)()
+              }
+              bodyTextProps={{ medium: true }}
+            >
+              {item.content?.length > 0
+                ? renderSection(item)
+                : item.contentAsObject !== undefined && (
+                    <Box paddedVertically={3} fullWidth>
+                      <MetadataTable metadataItem={item.contentAsObject} />
+                    </Box>
+                  )}
+            </Collapsible>
+          </Box>
+        ))}
       </div>
     );
   }
-});
+}
 
 export default withTranslation()(DataPreviewSections);

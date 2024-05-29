@@ -1,34 +1,30 @@
-import createReactClass from "create-react-class";
 import PropTypes from "prop-types";
 import React from "react";
 import defined from "terriajs-cesium/Source/Core/defined";
 import Ellipsoid from "terriajs-cesium/Source/Core/Ellipsoid";
 import Rectangle from "terriajs-cesium/Source/Core/Rectangle";
-import knockout from "terriajs-cesium/Source/ThirdParty/knockout";
 import MapInteractionMode from "../../../Models/MapInteractionMode";
-import raiseErrorToUser from "../../../Models/raiseErrorToUser";
 import Loader from "../../Loader";
 import LocationItem from "../../LocationItem.jsx";
-import ObserveModelMixin from "../../ObserveModelMixin";
 import { withTranslation } from "react-i18next";
+import { observer } from "mobx-react";
+import { runInAction, reaction } from "mobx";
 
 import Styles from "./satellite-imagery-time-filter-section.scss";
 
-const SatelliteImageryTimeFilterSection = createReactClass({
-  displayName: "SatelliteImageryTimeFilterSection",
-  mixins: [ObserveModelMixin],
-
-  propTypes: {
+@observer
+class SatelliteImageryTimeFilterSection extends React.Component {
+  static propTypes = {
     item: PropTypes.object,
     t: PropTypes.func.isRequired
-  },
+  };
 
   removeFilter() {
-    this.props.item.filterIntervalsByFeature(undefined);
-  },
+    this.props.item.removeTimeFilterFeature();
+  }
 
   zoomTo() {
-    const feature = this.props.item.intervalFilterFeature;
+    const feature = this.props.item.timeFilterFeature;
     const position =
       feature !== undefined && feature.position !== undefined
         ? feature.position.getValue(this.props.item.currentTime)
@@ -44,7 +40,7 @@ const SatelliteImageryTimeFilterSection = createReactClass({
         )
       );
     }
-  },
+  }
 
   newLocation() {
     const { t } = this.props;
@@ -53,72 +49,87 @@ const SatelliteImageryTimeFilterSection = createReactClass({
 
     const pickPointMode = new MapInteractionMode({
       message: t("satellite.pickPoint"),
-      onCancel: () => {
-        terria.mapInteractionModeStack.pop();
-      }
+      onCancel: () => runInAction(() => terria.mapInteractionModeStack.pop())
     });
-    terria.mapInteractionModeStack.push(pickPointMode);
 
-    knockout
-      .getObservable(pickPointMode, "pickedFeatures")
-      .subscribe(pickedFeatures => {
-        pickPointMode.customUi = function() {
-          return <Loader message={t("satellite.querying")} />;
-        };
+    runInAction(() => terria.mapInteractionModeStack.push(pickPointMode));
 
-        pickedFeatures.allFeaturesAvailablePromise.then(() => {
-          if (
-            terria.mapInteractionModeStack[
-              terria.mapInteractionModeStack.length - 1
-            ] !== pickPointMode
-          ) {
-            // Already canceled.
-            return;
-          }
-
-          const item = this.props.item;
-          const thisLayerFeature = pickedFeatures.features.filter(feature => {
-            return feature.imageryLayer === item.imageryLayer;
-          })[0];
-
-          if (thisLayerFeature !== undefined) {
-            try {
-              item.filterIntervalsByFeature(thisLayerFeature, pickedFeatures);
-            } catch (e) {
-              raiseErrorToUser(terria, e);
-            }
-          }
-
-          terria.mapInteractionModeStack.pop();
+    // Set up a reaction to observe pickedFeatures and filter the items
+    // discrete times
+    const disposer = reaction(
+      () => pickPointMode.pickedFeatures,
+      async (pickedFeatures) => {
+        runInAction(() => {
+          pickPointMode.customUi = function () {
+            return <Loader message={t("satellite.querying")} />;
+          };
         });
-      });
-  },
+
+        await pickedFeatures.allFeaturesAvailablePromise;
+        if (
+          terria.mapInteractionModeStack[
+            terria.mapInteractionModeStack.length - 1
+          ] !== pickPointMode
+        ) {
+          // already cancelled
+          disposer();
+          return;
+        }
+
+        const item = this.props.item;
+        const thisLayerFeature = pickedFeatures.features.filter((feature) => {
+          return (
+            item.mapItems.find(
+              (mapItem) =>
+                mapItem.imageryProvider &&
+                mapItem.imageryProvider ===
+                  feature.imageryLayer?.imageryProvider
+            ) !== undefined
+          );
+        })[0];
+
+        if (thisLayerFeature !== undefined) {
+          try {
+            item.setTimeFilterFeature(
+              thisLayerFeature,
+              pickedFeatures.providerCoords
+            );
+          } catch (e) {
+            terria.raiseErrorToUser(e);
+          }
+        }
+
+        runInAction(() => terria.mapInteractionModeStack.pop());
+        disposer();
+      }
+    );
+  }
 
   render() {
-    if (!this.props.item.canFilterIntervalsByFeature) {
+    if (!this.props.item.canFilterTimeByFeature) {
       return null;
     }
 
-    const feature = this.props.item.intervalFilterFeature;
+    const feature = this.props.item.timeFilterFeature;
     if (feature === undefined) {
       return this.renderNoFeatureSelected();
     } else {
       return this.renderFeatureSelected(feature);
     }
-  },
+  }
 
   renderNoFeatureSelected() {
     const { t } = this.props;
     return (
       <div className={Styles.inactive}>
         <div className={Styles.btnGroup}>
-          <button className={Styles.btn} onClick={this.newLocation}>
+          <button className={Styles.btn} onClick={() => this.newLocation()}>
             {t("satellite.filterByLocation")}
           </button>
         </div>
       </div>
     );
-  },
+  }
 
   renderFeatureSelected(feature) {
     const { t } = this.props;
@@ -129,25 +140,30 @@ const SatelliteImageryTimeFilterSection = createReactClass({
         : undefined;
 
     return (
-      <div className={Styles.active}>
+      <div
+        className={Styles.active}
+        css={`
+          background: ${(p) => p.theme.colorPrimary};
+        `}
+      >
         <div className={Styles.infoGroup}>
           <div>{t("satellite.infoGroup")}</div>
           <LocationItem position={position} />
         </div>
         <div className={Styles.btnGroup}>
-          <button className={Styles.btn} onClick={this.removeFilter}>
+          <button className={Styles.btn} onClick={() => this.removeFilter()}>
             {t("satellite.removeFilter")}
           </button>
-          <button className={Styles.btn} onClick={this.zoomTo}>
+          <button className={Styles.btn} onClick={() => this.zoomTo()}>
             {t("satellite.zoomTo")}
           </button>
-          <button className={Styles.btn} onClick={this.newLocation}>
+          <button className={Styles.btn} onClick={() => this.newLocation()}>
             {t("satellite.newLocation")}
           </button>
         </div>
       </div>
     );
   }
-});
+}
 
-module.exports = withTranslation()(SatelliteImageryTimeFilterSection);
+export default withTranslation()(SatelliteImageryTimeFilterSection);

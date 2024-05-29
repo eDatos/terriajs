@@ -1,6 +1,5 @@
 {
-    "parameters": {
-        "corsProxyBaseUrl": "/myproxy/",
-        "proxyableDomainsUrl": "test/init/proxyabledomains.json"
-    }
+  "parameters": {
+    "corsProxyBaseUrl": "/myproxy/"
+  }
 }

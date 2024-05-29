@@ -1,48 +1,70 @@
 "use strict";
 
-import React from "react";
-import createReactClass from "create-react-class";
+import { observer } from "mobx-react";
 import PropTypes from "prop-types";
-import ObserveModelMixin from "../ObserveModelMixin";
-import DataCatalogItem from "./DataCatalogItem.jsx";
-import DataCatalogGroup from "./DataCatalogGroup.jsx";
+import React from "react";
+import GroupMixin from "../../ModelMixins/GroupMixin";
+import ReferenceMixin from "../../ModelMixins/ReferenceMixin";
+import DataCatalogGroup from "./DataCatalogGroup";
+import DataCatalogItem from "./DataCatalogItem";
+import DataCatalogReference from "./DataCatalogReference";
 
 /**
  * Component that is either a {@link CatalogItem} or a {@link DataCatalogMember} and encapsulated this choosing logic.
  */
-export default createReactClass({
-  mixins: [ObserveModelMixin],
-
-  displayName: "DataCatalogMember",
-
-  propTypes: {
+@observer
+class DataCatalogMember extends React.Component {
+  static propTypes = {
     member: PropTypes.object.isRequired,
     viewState: PropTypes.object.isRequired,
     manageIsOpenLocally: PropTypes.bool,
+    onActionButtonClicked: PropTypes.func,
     removable: PropTypes.bool,
-    terria: PropTypes.object
-  },
+    terria: PropTypes.object,
+    isTopLevel: PropTypes.bool
+  };
 
   render() {
-    if (this.props.member.isGroup) {
+    const member =
+      ReferenceMixin.isMixedInto(this.props.member) &&
+      this.props.member.nestedTarget !== undefined
+        ? this.props.member.nestedTarget
+        : this.props.member;
+
+    if (ReferenceMixin.isMixedInto(member)) {
+      return (
+        <DataCatalogReference
+          reference={member}
+          viewState={this.props.viewState}
+          terria={this.props.terria}
+          onActionButtonClicked={this.props.onActionButtonClicked}
+          isTopLevel={this.props.isTopLevel}
+        />
+      );
+    } else if (GroupMixin.isMixedInto(member)) {
       return (
         <DataCatalogGroup
-          group={this.props.member}
+          group={member}
           viewState={this.props.viewState}
           manageIsOpenLocally={this.props.manageIsOpenLocally}
+          onActionButtonClicked={this.props.onActionButtonClicked}
           removable={this.props.removable}
           terria={this.props.terria}
+          isTopLevel={this.props.isTopLevel}
         />
       );
     } else {
       return (
         <DataCatalogItem
-          item={this.props.member}
+          item={member}
           viewState={this.props.viewState}
+          onActionButtonClicked={this.props.onActionButtonClicked}
           removable={this.props.removable}
           terria={this.props.terria}
         />
       );
     }
   }
-});
+}
+
+export default DataCatalogMember;

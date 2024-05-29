@@ -1,6 +1,5 @@
 "use strict";
 
-/*global require,describe,it,expect*/
 var JulianDate = require("terriajs-cesium/Source/Core/JulianDate").default;
 var TableStructure = require("../../lib/Map/TableStructure");
 var TimeInterval = require("terriajs-cesium/Source/Core/TimeInterval").default;
@@ -13,11 +12,16 @@ if (typeof Intl === "object" && typeof Intl.NumberFormat === "function") {
   decimalPoint = Intl.NumberFormat().format(0.5)[1];
 }
 
-describe("TableStructure", function() {
-  it("can read from json object", function() {
+describe("TableStructure", function () {
+  it("can read from json object", function () {
     // Use a copy of data to make the column, because knockout adds stuff to data.
     // Also, test a "slice" of the column's values, to remove knockout stuff.
-    var data = [["x", "y"], [1, 5], [3, 8], [4, -3]];
+    var data = [
+      ["x", "y"],
+      [1, 5],
+      [3, 8],
+      [4, -3]
+    ];
     var tableStructure = TableStructure.fromJson(data.slice());
     expect(tableStructure.columns.length).toEqual(2);
     expect(tableStructure.columns[0].name).toEqual("x");
@@ -26,7 +30,7 @@ describe("TableStructure", function() {
     expect(tableStructure.columns[1].values.slice()).toEqual([5, 8, -3]);
   });
 
-  it("can read from csv string", function() {
+  it("can read from csv string", function () {
     var csvString = "x,y\r\n1,5\r\n3,8\r\n4,-3\r\n";
     var tableStructure = TableStructure.fromCsv(csvString);
     expect(tableStructure.columns.length).toEqual(2);
@@ -36,8 +40,13 @@ describe("TableStructure", function() {
     expect(tableStructure.columns[1].values.slice()).toEqual([5, 8, -3]);
   });
 
-  it("can read from json object into existing structure", function() {
-    var data = [["x", "y"], [1, 5], [3, 8], [4, -3]];
+  it("can read from json object into existing structure", function () {
+    var data = [
+      ["x", "y"],
+      [1, 5],
+      [3, 8],
+      [4, -3]
+    ];
     var tableStructure = new TableStructure();
     tableStructure.loadFromJson(data);
     expect(tableStructure.columns.length).toEqual(2);
@@ -47,7 +56,7 @@ describe("TableStructure", function() {
     expect(tableStructure.columns[1].values.slice()).toEqual([5, 8, -3]);
   });
 
-  it("can read from csv string into existing structure", function() {
+  it("can read from csv string into existing structure", function () {
     var csvString = "x,y\r\n1,5\r\n3,8\r\n4,-3\r\n";
     var tableStructure = new TableStructure();
     tableStructure.loadFromCsv(csvString);
@@ -58,8 +67,13 @@ describe("TableStructure", function() {
     expect(tableStructure.columns[1].values.slice()).toEqual([5, 8, -3]);
   });
 
-  it("can convert to ArrayOfColumns", function() {
-    var data = [["x", "y"], [1, 5], [3, 8], [4, -3]];
+  it("can convert to ArrayOfColumns", function () {
+    var data = [
+      ["x", "y"],
+      [1, 5],
+      [3, 8],
+      [4, -3]
+    ];
     var tableStructure = TableStructure.fromJson(data);
     var columns = tableStructure.toArrayOfColumns();
     expect(columns.length).toEqual(2);
@@ -67,16 +81,26 @@ describe("TableStructure", function() {
     expect(columns[1]).toEqual(["y", 5, 8, -3]);
   });
 
-  it("can convert to ArrayOfRows", function() {
-    var data = [["x", "y"], ["1", "5"], ["3", "8"], ["4", "-3"]];
+  it("can convert to ArrayOfRows", function () {
+    var data = [
+      ["x", "y"],
+      ["1", "5"],
+      ["3", "8"],
+      ["4", "-3"]
+    ];
     var tableStructure = TableStructure.fromJson(data);
     var rows = tableStructure.toArrayOfRows();
     expect(rows.length).toEqual(4);
     expect(rows).toEqual(data);
   });
 
-  it("can convert to ArrayOfRows with formatting", function() {
-    var data = [["x", "y"], [1.678, 9.883], [54321, 12345], [4, -3]];
+  it("can convert to ArrayOfRows with formatting", function () {
+    var data = [
+      ["x", "y"],
+      [1.678, 9.883],
+      [54321, 12345],
+      [4, -3]
+    ];
     var options = {
       columnOptions: {
         x: { format: { maximumFractionDigits: 0 } },
@@ -99,8 +123,13 @@ describe("TableStructure", function() {
     expect(rows).toEqual(target);
   });
 
-  it("can convert to ArrayOfRows with formatting and quotes if containing commas", function() {
-    var data = [["x", "y"], [1.678, 9.883], [54321, 12345], [4, -3]];
+  it("can convert to ArrayOfRows with formatting and quotes if containing commas", function () {
+    var data = [
+      ["x", "y"],
+      [1.678, 9.883],
+      [54321, 12345],
+      [4, -3]
+    ];
     var options = {
       columnOptions: {
         x: { format: { maximumFractionDigits: 0 } },
@@ -123,8 +152,13 @@ describe("TableStructure", function() {
     expect(rows).toEqual(target);
   });
 
-  it("can convert to ArrayOfRows with formatting and quotes if containing quotes", function() {
-    var data = [["x", "y"], [1.678, 9.883], [54321, 12345], [4, -3]];
+  it("can convert to ArrayOfRows with formatting and quotes if containing quotes", function () {
+    var data = [
+      ["x", "y"],
+      [1.678, 9.883],
+      [54321, 12345],
+      [4, -3]
+    ];
     var options = {
       columnOptions: {
         x: { format: { maximumFractionDigits: 0 } },
@@ -147,16 +181,24 @@ describe("TableStructure", function() {
     expect(rows).toEqual(target);
   });
 
-  it("can convert to csv", function() {
-    var data = [["lat", "y"], [1.678, 9.883], [54321, 12345], [4, -3]];
+  it("can convert to csv", function () {
+    var data = [
+      ["lat", "y"],
+      [1.678, 9.883],
+      [54321, 12345],
+      [4, -3]
+    ];
     var tableStructure = new TableStructure();
     tableStructure = tableStructure.loadFromJson(data);
     var csvString = tableStructure.toCsvString();
     expect(csvString).toEqual("lat,y\n1.678,9.883\n54321,12345\n4,-3");
   });
 
-  it("can create a data URI", function() {
-    var data = [["lat", "y"], [1.6, -9.8]];
+  it("can create a data URI", function () {
+    var data = [
+      ["lat", "y"],
+      [1.6, -9.8]
+    ];
     var tableStructure = new TableStructure();
     // From json
     tableStructure = tableStructure.loadFromJson(data);
@@ -169,20 +211,30 @@ describe("TableStructure", function() {
     expect(uri).toEqual("data:attachment/csv,lat%2Cy%0A1.6%2C-9.8");
   });
 
-  it("can convert to row objects", function() {
-    var data = [["lat", "y"], [1, 5.12345], [3, 8], [4, -3]];
+  it("can convert to row objects", function () {
+    var data = [
+      ["lat", "y"],
+      [1, 5.12345],
+      [3, 8],
+      [4, -3]
+    ];
     var tableStructure = TableStructure.fromJson(data);
     var rowObjects = tableStructure.toRowObjects();
     expect(rowObjects.length).toEqual(3);
-    // Scalar fields are converted to strings using formatNumberForLocale, but not lat/lon.
+    // Scalar fields are converted to strings using toLocaleString, but not lat/lon.
     // We could convert lat/lons too, if there's a reason to do it.
     expect(rowObjects[0]).toEqual({ lat: 1, y: "5.12345" });
     expect(rowObjects[1]).toEqual({ lat: 3, y: "8" });
     expect(rowObjects[2]).toEqual({ lat: 4, y: "-3" });
   });
 
-  it("can convert to string and number row objects", function() {
-    var data = [["x", "y"], [1.678, -9.883], [54321, 12345], [4, -3]];
+  it("can convert to string and number row objects", function () {
+    var data = [
+      ["x", "y"],
+      [1.678, -9.883],
+      [54321, 12345],
+      [4, -3]
+    ];
     var options = {
       columnOptions: {
         x: { format: { maximumFractionDigits: 0 } },
@@ -206,23 +258,46 @@ describe("TableStructure", function() {
     });
   });
 
-  it("can convert to point arrays", function() {
-    var data = [["a", "b", "c"], [1, 2, 3], [4, 5, 6], [7, 8, 9]];
+  it("can convert to point arrays", function () {
+    var data = [
+      ["a", "b", "c"],
+      [1, 2, 3],
+      [4, 5, 6],
+      [7, 8, 9]
+    ];
     var tableStructure = TableStructure.fromJson(data);
     var xy = tableStructure.toPointArrays();
     expect(xy.length).toEqual(2);
-    expect(xy[0]).toEqual([{ x: 1, y: 2 }, { x: 4, y: 5 }, { x: 7, y: 8 }]);
-    expect(xy[1]).toEqual([{ x: 1, y: 3 }, { x: 4, y: 6 }, { x: 7, y: 9 }]);
+    expect(xy[0]).toEqual([
+      { x: 1, y: 2 },
+      { x: 4, y: 5 },
+      { x: 7, y: 8 }
+    ]);
+    expect(xy[1]).toEqual([
+      { x: 1, y: 3 },
+      { x: 4, y: 6 },
+      { x: 7, y: 9 }
+    ]);
   });
 
-  it("can get column names", function() {
-    var data = [["lat", "y"], [1, 5], [3, 8], [4, -3]];
+  it("can get column names", function () {
+    var data = [
+      ["lat", "y"],
+      [1, 5],
+      [3, 8],
+      [4, -3]
+    ];
     var tableStructure = TableStructure.fromJson(data);
     expect(tableStructure.getColumnNames()).toEqual(["lat", "y"]);
   });
 
-  it("can get column with name", function() {
-    var data = [["x", "y"], [1, 5], [3, 8], [4, -3]];
+  it("can get column with name", function () {
+    var data = [
+      ["x", "y"],
+      [1, 5],
+      [3, 8],
+      [4, -3]
+    ];
     var tableStructure = TableStructure.fromJson(data);
     expect(tableStructure.getColumnWithName("y")).toEqual(
       tableStructure.columns[1]
@@ -230,8 +305,13 @@ describe("TableStructure", function() {
     expect(tableStructure.getColumnWithName("z")).toBeUndefined();
   });
 
-  it("sets column types", function() {
-    var data = [["x", "lat"], [1, 5], [3, 8], [4, -3]];
+  it("sets column types", function () {
+    var data = [
+      ["x", "lat"],
+      [1, 5],
+      [3, 8],
+      [4, -3]
+    ];
     var tableStructure = TableStructure.fromJson(data);
     expect(tableStructure.columnsByType[VarType.SCALAR].length).toEqual(1);
     expect(tableStructure.columnsByType[VarType.SCALAR][0].name).toEqual("x");
@@ -239,7 +319,7 @@ describe("TableStructure", function() {
     expect(tableStructure.columnsByType[VarType.LAT][0].name).toEqual("lat");
   });
 
-  it("counts the final row of CSV files with no trailing linefeed(s)", function() {
+  it("counts the final row of CSV files with no trailing linefeed(s)", function () {
     var csvString = "postcode,value\n0800,1\n0885,2";
     var tableStructure = new TableStructure();
     tableStructure.loadFromCsv(csvString);
@@ -260,7 +340,7 @@ describe("TableStructure", function() {
     expect(tableStructure.columns[1].values.length).toEqual(2);
   });
 
-  it("ignores final blank rows of CSV files", function() {
+  it("ignores final blank rows of CSV files", function () {
     var csvString = "postcode,value\n0800,1,\n0885,2,";
     var tableStructure = new TableStructure();
     tableStructure.loadFromCsv(csvString);
@@ -280,7 +360,7 @@ describe("TableStructure", function() {
     expect(tableStructure.columns[1].values.length).toEqual(2);
   });
 
-  it("can read csv string where column names are numbers", function() {
+  it("can read csv string where column names are numbers", function () {
     var csvString = "1,2\n9,8\n7,6";
     var tableStructure = new TableStructure();
     tableStructure.loadFromCsv(csvString);
@@ -288,7 +368,7 @@ describe("TableStructure", function() {
     expect(tableStructure.columns[1].name).toEqual("2");
   });
 
-  it("can describe rows with dates with and without timezones nicely", function() {
+  it("can describe rows with dates with and without timezones nicely", function () {
     var csvString =
       "date,value\r\n2015-10-15T12:34:56,5\r\n2015-10-02T12:34:56Z,8\r\n2015-11-03\r\n";
     var tableStructure = TableStructure.fromCsv(csvString);
@@ -303,8 +383,13 @@ describe("TableStructure", function() {
     expect(htmls[2]).toContain(">2015-11-03<"); // No time is added when only the date is given.
   });
 
-  it("can describe rows with formatting", function() {
-    var data = [["x", "y"], [1.678, 5.123], [54321, 12345], [4, -3]];
+  it("can describe rows with formatting", function () {
+    var data = [
+      ["x", "y"],
+      [1.678, 5.123],
+      [54321, 12345],
+      [4, -3]
+    ];
     var options = {
       columnOptions: {
         y: {
@@ -324,7 +409,7 @@ describe("TableStructure", function() {
     expect(htmls[1]).toContain("12" + separator + "345");
   });
 
-  it("can tell if it has address data", function() {
+  it("can tell if it has address data", function () {
     var data = [
       ["x", "y", "Address"],
       [1.678, 5.123, "25 Gozzard Street, GUNGAHLIN TOWN CENTRE, ACT"],
@@ -343,7 +428,12 @@ describe("TableStructure", function() {
     tableStructure = tableStructure.loadFromJson(data);
     expect(tableStructure.hasAddress).toBe(true);
 
-    var dataNoAddr = [["x", "y"], [1.678, 5.123], [54321, 12345], [4, -3]];
+    var dataNoAddr = [
+      ["x", "y"],
+      [1.678, 5.123],
+      [54321, 12345],
+      [4, -3]
+    ];
     var optionsNoAddr = {
       columnOptions: {
         y: {
@@ -357,7 +447,7 @@ describe("TableStructure", function() {
     expect(tableStructureNoAddr.hasAddress).toBe(false);
   });
 
-  it("can get feature id mapping", function() {
+  it("can get feature id mapping", function () {
     var data = [
       ["year", "id", "lat", "lon"],
       [1970, "A", 16.8, 5.2],
@@ -373,7 +463,7 @@ describe("TableStructure", function() {
     expect(map["B"]).toEqual([1, 3]);
   });
 
-  it("can handle idColumnNames = []", function() {
+  it("can handle idColumnNames = []", function () {
     var data = [
       ["year", "id", "lat", "lon"],
       [1970, "A", 16.8, 5.2],
@@ -388,7 +478,7 @@ describe("TableStructure", function() {
     expect(map).toEqual({});
   });
 
-  it("can append a table", function() {
+  it("can append a table", function () {
     var data = [
       ["year", "id", "lat", "lon"],
       [1970, "A", 16.8, 5.2],
@@ -408,7 +498,7 @@ describe("TableStructure", function() {
     expect(table1.columns[1].values.slice()).toEqual(["A", "B", "C", "D"]);
   });
 
-  it("can append part of a table", function() {
+  it("can append part of a table", function () {
     var data = [
       ["year", "id", "lat", "lon"],
       [1970, "A", 16.8, 5.2],
@@ -430,7 +520,7 @@ describe("TableStructure", function() {
     expect(table1.columns[1].values.slice()).toEqual(["A", "B", "D", "F"]);
   });
 
-  it("can replace rows", function() {
+  it("can replace rows", function () {
     var data = [
       ["year", "id", "lat", "lon"],
       [1970, "A", 16.8, 5.2],
@@ -450,7 +540,7 @@ describe("TableStructure", function() {
     expect(table1.columns[1].values.slice()).toEqual(["A", "C"]);
   });
 
-  it("can merge tables with dates", function() {
+  it("can merge tables with dates", function () {
     var data = [
       ["year", "id", "lat", "lon"],
       [1970, "A", 16.8, 5.2],
@@ -479,9 +569,17 @@ describe("TableStructure", function() {
     expect(table1.columns[1].color).toEqual("blue");
   });
 
-  it("can merge tables without dates", function() {
-    var data = [["id", "lat", "lon"], ["A", 16.8, 5.2], ["B", 16.2, 5.2]];
-    var dat2 = [["id", "lat", "lon"], ["A", 12, 8], ["C", 15, 5.5]];
+  it("can merge tables without dates", function () {
+    var data = [
+      ["id", "lat", "lon"],
+      ["A", 16.8, 5.2],
+      ["B", 16.2, 5.2]
+    ];
+    var dat2 = [
+      ["id", "lat", "lon"],
+      ["A", 12, 8],
+      ["C", 15, 5.5]
+    ];
     var options = { idColumnNames: ["id"] };
     var table1 = new TableStructure("foo", options);
     var table2 = new TableStructure("bar"); // Only uses idColumnNames on table1.
@@ -492,8 +590,13 @@ describe("TableStructure", function() {
     expect(table1.columns[1].values.slice()).toEqual([12, 16.2, 15]);
   });
 
-  it("can add columns", function() {
-    var dataNoAddr = [["x", "y"], [1.678, 5.123], [54321, 12345], [4, -3]];
+  it("can add columns", function () {
+    var dataNoAddr = [
+      ["x", "y"],
+      [1.678, 5.123],
+      [54321, 12345],
+      [4, -3]
+    ];
     var options = {
       columnOptions: {
         y: {
@@ -514,19 +617,20 @@ describe("TableStructure", function() {
     expect(tableStructure.columns[VarType.LON].values).toBe(longValues);
   });
 
-  it("can sort columns", function() {
-    var data = [["x", "y", "z"], [3, 5, "a"], [1, 8, "c"], [4, -3, "b"]];
+  it("can sort columns", function () {
+    var data = [
+      ["x", "y", "z"],
+      [3, 5, "a"],
+      [1, 8, "c"],
+      [4, -3, "b"]
+    ];
     var tableStructure = TableStructure.fromJson(data);
     tableStructure.sortBy(tableStructure.getColumnWithName("x"));
     expect(tableStructure.getColumnWithName("x").values.slice()).toEqual([
-      1,
-      3,
-      4
+      1, 3, 4
     ]);
     expect(tableStructure.getColumnWithName("y").values.slice()).toEqual([
-      8,
-      5,
-      -3
+      8, 5, -3
     ]);
     expect(tableStructure.getColumnWithName("z").values.slice()).toEqual([
       "c",
@@ -535,35 +639,27 @@ describe("TableStructure", function() {
     ]);
     tableStructure.sortBy(tableStructure.getColumnWithName("z"));
     expect(tableStructure.getColumnWithName("x").values.slice()).toEqual([
-      3,
-      4,
-      1
+      3, 4, 1
     ]);
     expect(tableStructure.getColumnWithName("y").values.slice()).toEqual([
-      5,
-      -3,
-      8
+      5, -3, 8
     ]);
     expect(tableStructure.getColumnWithName("z").values.slice()).toEqual([
       "a",
       "b",
       "c"
     ]);
-    tableStructure.sortBy(tableStructure.getColumnWithName("x"), function(
-      a,
-      b
-    ) {
-      return b - a;
-    }); // descending
+    tableStructure.sortBy(
+      tableStructure.getColumnWithName("x"),
+      function (a, b) {
+        return b - a;
+      }
+    ); // descending
     expect(tableStructure.getColumnWithName("x").values.slice()).toEqual([
-      4,
-      3,
-      1
+      4, 3, 1
     ]);
     expect(tableStructure.getColumnWithName("y").values.slice()).toEqual([
-      -3,
-      5,
-      8
+      -3, 5, 8
     ]);
     expect(tableStructure.getColumnWithName("z").values.slice()).toEqual([
       "b",
@@ -572,7 +668,7 @@ describe("TableStructure", function() {
     ]);
   });
 
-  it("can sort columns by date, even with null dates", function() {
+  it("can sort columns by date, even with null dates", function () {
     // Note the last date occurs before the first, but a string compare would disagree.
     var data = [
       ["date", "v"],
@@ -591,7 +687,7 @@ describe("TableStructure", function() {
     ]);
   });
 
-  it("can calculate finish dates", function() {
+  it("can calculate finish dates", function () {
     var data = [["date"], ["2016-01-03T12:15:00Z"], ["2016-01-03T12:15:30Z"]];
     var tableStructure = TableStructure.fromJson(data);
     tableStructure.setActiveTimeColumn();
@@ -601,7 +697,7 @@ describe("TableStructure", function() {
     ]);
   });
 
-  it("can calculate sub-second finish dates", function() {
+  it("can calculate sub-second finish dates", function () {
     var data = [
       ["date"],
       ["2016-01-03T12:15:00Z"],
@@ -617,7 +713,7 @@ describe("TableStructure", function() {
     ]);
   });
 
-  it("supports displayDuration", function() {
+  it("supports displayDuration", function () {
     var data = [["date"], ["2016-01-03"], ["2016-01-04"], ["2016-01-05"]];
     var sevenDaysInMinutes = 60 * 24 * 7;
     var tableStructure = new TableStructure("test", {
@@ -639,7 +735,7 @@ describe("TableStructure", function() {
     expect(durationInSeconds).toEqual(sevenDaysInMinutes * 60);
   });
 
-  it("uses start_date and end_date", function() {
+  it("uses start_date and end_date", function () {
     // Note these end dates overlap (12:15:00-12:16:10, 12:15:30-12:16:40).
     var data = [
       ["start_date", "end_date"],
@@ -654,7 +750,7 @@ describe("TableStructure", function() {
     ]);
   });
 
-  it("calculates id-specific date periods", function() {
+  it("calculates id-specific date periods", function () {
     // A and B both have two two-day observations, but they are interspersed.
     // Without an id column, they would have one-day observations.
     var data = [
@@ -676,7 +772,7 @@ describe("TableStructure", function() {
     ]);
   });
 
-  it("can add feature rows at start and end dates", function() {
+  it("can add feature rows at start and end dates", function () {
     var data = [
       ["date", "id", "value"],
       ["2016-01-01T00:00:00Z", "A", 10],
@@ -686,10 +782,11 @@ describe("TableStructure", function() {
     ];
     var tableStructure = TableStructure.fromJson(data);
     tableStructure.idColumnNames = ["id"];
-    tableStructure.columns = tableStructure.getColumnsWithFeatureRowsAtStartAndEndDates(
-      "date",
-      "value"
-    );
+    tableStructure.columns =
+      tableStructure.getColumnsWithFeatureRowsAtStartAndEndDates(
+        "date",
+        "value"
+      );
     tableStructure.setActiveTimeColumn();
     expect(tableStructure.columns[1].values.slice()).toEqual([
       "A",
@@ -717,9 +814,9 @@ describe("TableStructure", function() {
     ]);
   });
 
-  describe("Time slider initial time as specified by initialTimeSource ", function() {
+  describe("Time slider initial time as specified by initialTimeSource ", function () {
     // Future developers take note: some of these tests will stop working sometime after August 3015.
-    it('should be start if "start" set', function() {
+    it('should be start if "start" set', function () {
       var tableStructure = new TableStructure("test", {
         initialTimeSource: "start"
       });
@@ -741,7 +838,7 @@ describe("TableStructure", function() {
       expect(currentTime).toBe("2013-08-07");
     });
 
-    it('should be current time if "present" set', function() {
+    it('should be current time if "present" set', function () {
       var tableStructure = new TableStructure("test", {
         initialTimeSource: "present"
       });
@@ -765,7 +862,7 @@ describe("TableStructure", function() {
       expect(currentTime).toBe(dateNow);
     });
 
-    it('should be last time if "end" set', function() {
+    it('should be last time if "end" set', function () {
       var tableStructure = new TableStructure("test", {
         initialTimeSource: "end",
         finalEndJulianDate: JulianDate.fromIso8601("2015-08-09T00:00:00.00Z")
@@ -783,7 +880,7 @@ describe("TableStructure", function() {
       expect(currentTime).toBe("2015-08-09");
     });
 
-    it("should be set to date specified if date is specified", function() {
+    it("should be set to date specified if date is specified", function () {
       var tableStructure = new TableStructure("test", {
         initialTimeSource: "2015-08-08T00:00:00.00Z"
       });
@@ -805,7 +902,7 @@ describe("TableStructure", function() {
       expect(currentTime).toBe("2015-08-08");
     });
 
-    it("should throw if a rubbish string is specified", function() {
+    it("should throw if a rubbish string is specified", function () {
       var tableStructure = new TableStructure("test", {
         initialTimeSource: "2015z08-08"
       });
@@ -816,7 +913,7 @@ describe("TableStructure", function() {
       ];
       TableStructure.fromJson(data, tableStructure);
 
-      expect(function() {
+      expect(function () {
         tableStructure.setActiveTimeColumn();
       }).toThrow();
     });

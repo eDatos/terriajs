@@ -1,43 +1,68 @@
-import React from "react";
 import createReactClass from "create-react-class";
 import PropTypes from "prop-types";
-import Icon from "../../../Icon.jsx";
-import addUserCatalogMember from "../../../../Models/addUserCatalogMember";
-import createCatalogItemFromFileOrUrl from "../../../../Models/createCatalogItemFromFileOrUrl";
-import createCatalogMemberFromType from "../../../../Models/createCatalogMemberFromType";
-import Dropdown from "../../../Generic/Dropdown";
-import FileInput from "./FileInput.jsx";
+import React from "react";
+import { Trans, withTranslation } from "react-i18next";
+import {
+  Category,
+  DatatabAction
+} from "../../../../Core/AnalyticEvents/analyticEvents";
 import getDataType from "../../../../Core/getDataType";
-import ObserveModelMixin from "../../../ObserveModelMixin";
-import TerriaError from "../../../../Core/TerriaError";
-import addUserFiles from "../../../../Models/addUserFiles";
-import Styles from "./add-data.scss";
+import TimeVarying from "../../../../ModelMixins/TimeVarying";
+import addUserCatalogMember from "../../../../Models/Catalog/addUserCatalogMember";
+import addUserFiles from "../../../../Models/Catalog/addUserFiles";
+import CatalogMemberFactory from "../../../../Models/Catalog/CatalogMemberFactory";
+import createCatalogItemFromFileOrUrl from "../../../../Models/Catalog/createCatalogItemFromFileOrUrl";
+import CommonStrata from "../../../../Models/Definition/CommonStrata";
+import upsertModelFromJson from "../../../../Models/Definition/upsertModelFromJson";
+import Icon from "../../../../Styled/Icon";
+import Dropdown from "../../../Generic/Dropdown";
 import Loader from "../../../Loader";
-import { withTranslation, Trans } from "react-i18next";
-
-// Local and remote data have different dataType options
-const remoteDataType = getDataType().remoteDataType;
-const localDataType = getDataType().localDataType;
+import Styles from "./add-data.scss";
+import FileInput from "./FileInput";
+import { parseCustomMarkdownToReactWithOptions } from "../../../Custom/parseCustomMarkdownToReact";
+import loadJson from "../../../../Core/loadJson";
+import TerriaError from "../../../../Core/TerriaError";
 
 /**
  * Add data panel in modal window -> My data tab
  */
 const AddData = createReactClass({
   displayName: "AddData",
-  mixins: [ObserveModelMixin],
 
   propTypes: {
     terria: PropTypes.object,
     viewState: PropTypes.object,
     resetTab: PropTypes.func,
     activeTab: PropTypes.string,
+    // localDataTypes & remoteDataTypes specifies the file types to show in dropdowns for local and remote data uploads.
+    // These default to the lists defined in getDataType.ts
+    // Some external components use these props to customize the types shown.
+    localDataTypes: PropTypes.arrayOf(PropTypes.object),
+    remoteDataTypes: PropTypes.arrayOf(PropTypes.object),
+    onFileAddFinished: PropTypes.func.isRequired,
+    onUrlAddFinished: PropTypes.func.isRequired,
     t: PropTypes.func.isRequired
   },
 
   getInitialState() {
+    const remoteDataTypes =
+      this.props.remoteDataTypes ?? getDataType().remoteDataType;
+
+    // Automatically suffix supported extension types to localDataType names
+    const localDataTypes = (
+      this.props.localDataTypes ?? getDataType().localDataType
+    ).map((dataType) => {
+      const extensions = dataType.extensions?.length
+        ? ` (${buildExtensionsList(dataType.extensions)})`
+        : "";
+      return { ...dataType, name: `${dataType.name}${extensions}` };
+    });
+
     return {
-      localDataType: localDataType[0], // By default select the first item (auto)
-      remoteDataType: remoteDataType[0],
+      remoteDataTypes,
+      localDataTypes,
+      remoteDataType: remoteDataTypes[0], // By default select the first item (auto)
+      localDataType: localDataTypes[0],
       remoteUrl: "", // By default there's no remote url
       isLoading: false
     };
@@ -64,9 +89,9 @@ const AddData = createReactClass({
       this.props.terria,
       this.props.viewState,
       this.state.localDataType
-    ).then(addedCatalogItems => {
-      if (addedCatalogItems.length > 0) {
-        this.onFileAddFinished(addedCatalogItems[0]);
+    ).then((addedCatalogItems) => {
+      if (addedCatalogItems && addedCatalogItems.length > 0) {
+        this.props.onFileAddFinished(addedCatalogItems);
       }
       this.setState({
         isLoading: false
@@ -76,42 +101,88 @@ const AddData = createReactClass({
     });
   },
 
-  handleUrl(e) {
+  async handleUrl(e) {
     const url = this.state.remoteUrl;
     e.preventDefault();
-    this.props.terria.analytics.logEvent("addDataUrl", url);
-    const that = this;
+    this.props.terria.analytics?.logEvent(
+      Category.dataTab,
+      DatatabAction.addDataUrl,
+      url
+    );
     this.setState({
       isLoading: true
     });
     let promise;
-    if (that.state.remoteDataType.value === "auto") {
-      promise = loadFile(that);
-    } else {
-      const newItem = createCatalogMemberFromType(
-        that.state.remoteDataType.value,
-        that.props.terria
+    if (this.state.remoteDataType.value === "auto") {
+      promise = createCatalogItemFromFileOrUrl(
+        this.props.terria,
+        this.props.viewState,
+        this.state.remoteUrl,
+        this.state.remoteDataType.value
       );
-      newItem.name = that.state.remoteUrl;
-      newItem.url = that.state.remoteUrl;
-      promise = newItem.load().then(function() {
-        return newItem;
-      });
-    }
-    addUserCatalogMember(this.props.terria, promise).then(addedItem => {
-      if (addedItem && !(addedItem instanceof TerriaError)) {
-        this.onFileAddFinished(addedItem);
+    } else if (this.state.remoteDataType.value === "json") {
+      promise = loadJson(this.state.remoteUrl)
+        .then((data) => {
+          if (data.error) {
+            return Promise.reject(data.error);
+          }
+          this.props.terria.catalog.group
+            .addMembersFromJson(CommonStrata.user, data.catalog)
+            .raiseError(this.props.terria, "Failed to load catalog from file");
+        })
+        .then(() => {
+          this.props.onUrlAddFinished();
+        })
+        .catch((error) =>
+          TerriaError.from(error).raiseError(
+            this.props.terria,
+            `An error occurred trying to add data from URL: ${this.state.remoteUrl}`
+          )
+        )
+        .finally(() => {
+          this.setState({
+            isLoading: false
+          });
+        });
+    } else {
+      try {
+        const newItem = upsertModelFromJson(
+          CatalogMemberFactory,
+          this.props.terria,
+          "",
+          CommonStrata.defaults,
+          { type: this.state.remoteDataType.value, name: url },
+          {}
+        ).throwIfUndefined({
+          message: `An error occurred trying to add data from URL: ${url}`
+        });
+        newItem.setTrait(CommonStrata.user, "url", url);
+        promise = newItem.loadMetadata().then((result) => {
+          if (result.error) {
+            return Promise.reject(result.error);
+          }
+
+          return Promise.resolve(newItem);
+        });
+      } catch (e) {
+        promise = Promise.reject(e);
       }
+    }
+    addUserCatalogMember(this.props.terria, promise).then((addedItem) => {
+      if (addedItem) {
+        this.props.onFileAddFinished([addedItem]);
+        if (TimeVarying.is(addedItem)) {
+          this.props.terria.timelineStack.addToTop(addedItem);
+        }
+      }
+
+      // FIXME: Setting state here might result in a react warning if the
+      // component unmounts before the promise finishes
       this.setState({
         isLoading: false
       });
       this.props.resetTab();
     });
-  },
-
-  onFileAddFinished(fileToSelect) {
-    this.props.viewState.myDataIsUploadView = false;
-    this.props.viewState.viewCatalogMember(fileToSelect);
   },
 
   onRemoteUrlChange(event) {
@@ -129,85 +200,104 @@ const AddData = createReactClass({
       icon: <Icon glyph={Icon.GLYPHS.opened} />
     };
 
-    const dataTypes = localDataType.reduce(function(result, currentDataType) {
+    const dataTypes = this.state.localDataTypes.reduce(function (
+      result,
+      currentDataType
+    ) {
       if (currentDataType.extensions) {
         return result.concat(
-          currentDataType.extensions.map(extension => "." + extension)
+          currentDataType.extensions.map((extension) => "." + extension)
         );
       } else {
         return result;
       }
-    }, []);
+    },
+    []);
 
     return (
       <div className={Styles.tabPanels}>
-        <If condition={this.props.activeTab === "local"}>
-          <div className={Styles.tabHeading}>{t("addData.localAdd")}</div>
-          <section className={Styles.tabPanel}>
-            <label className={Styles.label}>
-              <Trans i18nKey="addData.localFileType">
-                <strong>Step 1:</strong> Select file type (optional)
-              </Trans>
-            </label>
-            <Dropdown
-              options={localDataType}
-              selected={this.state.localDataType}
-              selectOption={this.selectLocalOption}
-              matchWidth={true}
-              theme={dropdownTheme}
-            />
-            <label className={Styles.label}>
-              <Trans i18nKey="addData.localFile">
-                <strong>Step 2:</strong> Select file
-              </Trans>
-            </label>
-            <FileInput
-              accept={dataTypes.join(",")}
-              onChange={this.handleUploadFile}
-            />
-            {this.state.isLoading && <Loader />}
-          </section>
-        </If>
-        <If condition={this.props.activeTab === "web"}>
-          <div className={Styles.tabHeading}>{t("addData.webAdd")}</div>
-          <section className={Styles.tabPanel}>
-            <label className={Styles.label}>
-              <Trans i18nKey="addData.webFileType">
-                <strong>Step 1:</strong> Select file type (optional)
-              </Trans>
-            </label>
-            <Dropdown
-              options={remoteDataType}
-              selected={this.state.remoteDataType}
-              selectOption={this.selectRemoteOption}
-              matchWidth={true}
-              theme={dropdownTheme}
-            />
-            <label className={Styles.label}>
-              <Trans i18nKey="addData.webFile">
-                <strong>Step 2:</strong> Enter the URL of the data file or web
-                service
-              </Trans>
-            </label>
-            <form className={Styles.urlInput}>
-              <input
-                value={this.state.remoteUrl}
-                onChange={this.onRemoteUrlChange}
-                className={Styles.urlInputTextBox}
-                type="text"
-                placeholder="e.g. http://data.gov.au/geoserver/wms"
+        {this.props.activeTab === "local" && (
+          <>
+            <div className={Styles.tabHeading}>{t("addData.localAdd")}</div>
+            <section className={Styles.tabPanel}>
+              <label className={Styles.label}>
+                <Trans i18nKey="addData.localFileType">
+                  <strong>Step 1:</strong> Select file type
+                </Trans>
+              </label>
+              <Dropdown
+                options={this.state.localDataTypes}
+                selected={this.state.localDataType}
+                selectOption={this.selectLocalOption}
+                matchWidth
+                theme={dropdownTheme}
               />
-              <button
-                type="submit"
-                onClick={this.handleUrl}
-                className={Styles.urlInputBtn}
-              >
-                {t("addData.urlInputBtn")}
-              </button>
+              {this.state.localDataType?.description
+                ? parseCustomMarkdownToReactWithOptions(
+                    this.state.localDataType?.description
+                  )
+                : null}
+              <label className={Styles.label}>
+                <Trans i18nKey="addData.localFile">
+                  <strong>Step 2:</strong> Select file
+                </Trans>
+              </label>
+              <FileInput
+                accept={dataTypes.join(",")}
+                onChange={this.handleUploadFile}
+              />
               {this.state.isLoading && <Loader />}
-            </form>
-          </section>
-        </If>
+            </section>
+          </>
+        )}
+        {this.props.activeTab === "web" && (
+          <>
+            <div className={Styles.tabHeading}>{t("addData.webAdd")}</div>
+            <section className={Styles.tabPanel}>
+              <label className={Styles.label}>
+                <Trans i18nKey="addData.webFileType">
+                  <strong>Step 1:</strong> Select file or web service type
+                </Trans>
+              </label>
+              <Dropdown
+                options={this.state.remoteDataTypes}
+                selected={this.state.remoteDataType}
+                selectOption={this.selectRemoteOption}
+                matchWidth
+                theme={dropdownTheme}
+              />
+              {this.state.remoteDataType?.description
+                ? parseCustomMarkdownToReactWithOptions(
+                    this.state.remoteDataType?.description
+                  )
+                : null}
+              <label className={Styles.label}>
+                <Trans i18nKey="addData.webFile">
+                  <strong>Step 2:</strong> Enter the URL of the data file or web
+                  service
+                </Trans>
+              </label>
+              <form className={Styles.urlInput}>
+                <input
+                  value={this.state.remoteUrl}
+                  onChange={this.onRemoteUrlChange}
+                  className={Styles.urlInputTextBox}
+                  type="text"
+                  placeholder="e.g. http://data.gov.au/geoserver/wms"
+                />
+                <button
+                  disabled={this.state.remoteUrl.length === 0}
+                  type="submit"
+                  onClick={this.handleUrl}
+                  className={Styles.urlInputBtn}
+                >
+                  {t("addData.urlInputBtn")}
+                </button>
+                {this.state.isLoading && <Loader />}
+              </form>
+            </section>
+          </>
+        )}
       </div>
     );
   },
@@ -218,16 +308,11 @@ const AddData = createReactClass({
 });
 
 /**
- * Loads a catalog item from a file.
+ * @param extensions - string[]
+ * @returns Comma separated string of extensions
  */
-function loadFile(viewModel) {
-  return createCatalogItemFromFileOrUrl(
-    viewModel.props.terria,
-    viewModel.props.viewState,
-    viewModel.state.remoteUrl,
-    viewModel.state.remoteDataType.value,
-    true
-  );
+function buildExtensionsList(extensions) {
+  return extensions.map((ext) => `.${ext}`).join(", ");
 }
 
 module.exports = withTranslation()(AddData);

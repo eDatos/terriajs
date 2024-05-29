@@ -6,27 +6,28 @@ import createReactClass from "create-react-class";
 
 import PropTypes from "prop-types";
 
-import ObserveModelMixin from "../ObserveModelMixin";
 import PointParameterEditor from "./PointParameterEditor";
 import LineParameterEditor from "./LineParameterEditor";
-import RectangleParameterEditor from "./RectangleParameterEditor";
 import PolygonParameterEditor from "./PolygonParameterEditor";
 import RegionParameterEditor from "./RegionParameterEditor";
 import RegionTypeParameterEditor from "./RegionTypeParameterEditor";
-import RegionDataParameterEditor from "./RegionDataParameterEditor";
 import BooleanParameterEditor from "./BooleanParameterEditor";
 import BooleanParameterGroupEditor from "./BooleanParameterGroupEditor";
+import DateParameterEditor from "./DateParameterEditor";
 import DateTimeParameterEditor from "./DateTimeParameterEditor";
 import EnumerationParameterEditor from "./EnumerationParameterEditor";
 import GenericParameterEditor from "./GenericParameterEditor";
+import NumberParameterEditor from "./NumberParameterEditor";
 import GeoJsonParameterEditor from "./GeoJsonParameterEditor";
 import defined from "terriajs-cesium/Source/Core/defined";
 
 import Styles from "./parameter-editors.scss";
+import InfoParameterEditor from "./InfoParameterEditor";
+
+import parseCustomMarkdownToReact from "../Custom/parseCustomMarkdownToReact";
 
 const ParameterEditor = createReactClass({
   displayName: "ParameterEditor",
-  mixins: [ObserveModelMixin],
 
   propTypes: {
     parameter: PropTypes.object,
@@ -39,14 +40,29 @@ const ParameterEditor = createReactClass({
 
   renderLabel() {
     return (
-      <label
-        key={this.props.parameter.id}
-        className={Styles.label}
-        htmlFor={this.fieldId + this.props.parameter.type}
-      >
-        {this.props.parameter.name}
-        {this.props.parameter.isRequired && <span> (required)</span>}
-      </label>
+      <div>
+        <label
+          key={this.props.parameter.id}
+          className={Styles.label}
+          htmlFor={this.fieldId + this.props.parameter.type}
+        >
+          {this.props.parameter.name}
+          {this.props.parameter.isRequired && <span> (required)</span>}
+        </label>
+        {typeof this.props.parameter.description === "string" &&
+        this.props.parameter.description !== "" &&
+        typeof this.props.parameter.rangeDescription === "string" &&
+        this.props.parameter.rangeDescription !== ""
+          ? parseCustomMarkdownToReact(
+              `${this.props.parameter.description} ${this.props.parameter.rangeDescription}`,
+              {
+                parameter: this.props.parameter
+              }
+            )
+          : parseCustomMarkdownToReact(this.props.parameter.description, {
+              parameter: this.props.parameter
+            })}
+      </div>
     );
   },
 
@@ -58,11 +74,19 @@ const ParameterEditor = createReactClass({
         this
       );
       if (defined(editor)) {
-        return editor;
+        return (
+          <div
+            style={{
+              color: this.props.parameter.isValid ? "inherit" : "#ff0000"
+            }}
+          >
+            {editor}
+          </div>
+        );
       }
     }
     const genericEditor = ParameterEditor.parameterTypeConverters.filter(
-      function(item) {
+      function (item) {
         return item.id === "generic";
       }
     )[0];
@@ -118,27 +142,27 @@ ParameterEditor.parameterTypeConverters = [
       }
     }
   },
-  {
-    id: "rectangle",
-    parameterTypeToDiv: function RectangleParameterToDiv(
-      type,
-      parameterEditor
-    ) {
-      if (type === this.id) {
-        return (
-          <div>
-            {parameterEditor.renderLabel()}
-            <RectangleParameterEditor
-              previewed={parameterEditor.props.previewed}
-              viewState={parameterEditor.props.viewState}
-              parameter={parameterEditor.props.parameter}
-              parameterViewModel={parameterEditor.props.parameterViewModel}
-            />
-          </div>
-        );
-      }
-    }
-  },
+  // {
+  //   id: "rectangle",
+  //   parameterTypeToDiv: function RectangleParameterToDiv(
+  //     type,
+  //     parameterEditor
+  //   ) {
+  //     if (type === this.id) {
+  //       return (
+  //         <div>
+  //           {parameterEditor.renderLabel()}
+  //           <RectangleParameterEditor
+  //             previewed={parameterEditor.props.previewed}
+  //             viewState={parameterEditor.props.viewState}
+  //             parameter={parameterEditor.props.parameter}
+  //             parameterViewModel={parameterEditor.props.parameterViewModel}
+  //           />
+  //         </div>
+  //       );
+  //     }
+  //   }
+  // },
   {
     id: "polygon",
     parameterTypeToDiv: function PolygonParameterToDiv(type, parameterEditor) {
@@ -179,6 +203,23 @@ ParameterEditor.parameterTypeConverters = [
     }
   },
   {
+    id: "date",
+    parameterTypeToDiv: function DateParameterToDiv(type, parameterEditor) {
+      if (type === this.id) {
+        return (
+          <div>
+            {parameterEditor.renderLabel()}
+            <DateParameterEditor
+              previewed={parameterEditor.props.previewed}
+              parameter={parameterEditor.props.parameter}
+              parameterViewModel={parameterEditor.props.parameterViewModel}
+            />
+          </div>
+        );
+      }
+    }
+  },
+  {
     id: "dateTime",
     parameterTypeToDiv: function DateTimeParameterToDiv(type, parameterEditor) {
       if (type === this.id) {
@@ -189,6 +230,7 @@ ParameterEditor.parameterTypeConverters = [
               previewed={parameterEditor.props.previewed}
               parameter={parameterEditor.props.parameter}
               parameterViewModel={parameterEditor.props.parameterViewModel}
+              terria={parameterEditor.props.viewState.terria}
             />
           </div>
         );
@@ -221,7 +263,7 @@ ParameterEditor.parameterTypeConverters = [
     ) {
       if (type === this.id) {
         const regionParam = parameterEditor.props.previewed.parameters.filter(
-          function(param) {
+          function (param) {
             return (
               defined(param.regionTypeParameter) &&
               param.regionTypeParameter === parameterEditor.props.parameter
@@ -230,37 +272,20 @@ ParameterEditor.parameterTypeConverters = [
         )[0];
         return (
           <div>
-            <If condition={regionParam === undefined}>
-              {parameterEditor.renderLabel()}
-              <RegionTypeParameterEditor
-                previewed={parameterEditor.props.previewed}
-                parameter={parameterEditor.props.parameter}
-                parameterViewModel={parameterEditor.props.parameterViewModel}
-              />
-            </If>
-            <If condition={!parameterEditor.props.parameter.showInUi}>
+            {regionParam === undefined && (
+              <>
+                {parameterEditor.renderLabel()}
+                <RegionTypeParameterEditor
+                  previewed={parameterEditor.props.previewed}
+                  parameter={parameterEditor.props.parameter}
+                  parameterViewModel={parameterEditor.props.parameterViewModel}
+                />
+              </>
+            )}
+
+            {!parameterEditor.props.parameter.showInUi && (
               <div className="Placeholder for regionType" />
-            </If>
-          </div>
-        );
-      }
-    }
-  },
-  {
-    id: "regionData",
-    parameterTypeToDiv: function RegionDataParameterToDiv(
-      type,
-      parameterEditor
-    ) {
-      if (type === this.id) {
-        return (
-          <div>
-            {parameterEditor.renderLabel()}
-            <RegionDataParameterEditor
-              previewed={parameterEditor.props.previewed}
-              parameter={parameterEditor.props.parameter}
-              parameterViewModel={parameterEditor.props.parameterViewModel}
-            />
+            )}
           </div>
         );
       }
@@ -272,7 +297,8 @@ ParameterEditor.parameterTypeConverters = [
       if (type === this.id) {
         return (
           <div>
-            {parameterEditor.renderLabel()}
+            {parameterEditor.props.parameter.hasNamedStates &&
+              parameterEditor.renderLabel()}
             <BooleanParameterEditor
               previewed={parameterEditor.props.previewed}
               parameter={parameterEditor.props.parameter}
@@ -321,6 +347,23 @@ ParameterEditor.parameterTypeConverters = [
     }
   },
   {
+    id: "info",
+    parameterTypeToDiv: function GenericParameterToDiv(type, parameterEditor) {
+      if (type === this.id) {
+        return (
+          <div>
+            {parameterEditor.renderLabel()}
+            <InfoParameterEditor
+              previewed={parameterEditor.props.previewed}
+              parameter={parameterEditor.props.parameter}
+              parameterViewModel={parameterEditor.props.parameterViewModel}
+            />
+          </div>
+        );
+      }
+    }
+  },
+  {
     id: "generic",
     parameterTypeToDiv: function GenericParameterToDiv(type, parameterEditor) {
       if (type === this.id) {
@@ -328,6 +371,23 @@ ParameterEditor.parameterTypeConverters = [
           <div>
             {parameterEditor.renderLabel()}
             <GenericParameterEditor
+              previewed={parameterEditor.props.previewed}
+              parameter={parameterEditor.props.parameter}
+              parameterViewModel={parameterEditor.props.parameterViewModel}
+            />
+          </div>
+        );
+      }
+    }
+  },
+  {
+    id: "number",
+    parameterTypeToDiv: function NumberParameterToDiv(type, parameterEditor) {
+      if (type === this.id) {
+        return (
+          <div>
+            {parameterEditor.renderLabel()}
+            <NumberParameterEditor
               previewed={parameterEditor.props.previewed}
               parameter={parameterEditor.props.parameter}
               parameterViewModel={parameterEditor.props.parameterViewModel}

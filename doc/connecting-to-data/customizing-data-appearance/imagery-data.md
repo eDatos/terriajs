@@ -1,5 +1,7 @@
 # Imagery Data
 
+**Warning: This section needs to be updated for TerriaJS version 8.**
+
 ## Overview
 
 Here's an example json file which places some sample WMS items in an open group called "WMS example", at the top of the catalog:
@@ -22,7 +24,7 @@ Here's an example json file which places some sample WMS items in an open group 
                     "showDatetimePicker": true,
                     "useOwnClock": true,
                     "featureInfoTemplate": {
-                        "name":"{{GRAY_INDEX}} W/m2"
+                        "name": "{{GRAY_INDEX}} W/m2"
                     }
                 },
                 {
@@ -33,20 +35,18 @@ Here's an example json file which places some sample WMS items in an open group 
                     "maxRefreshIntervals": 9000,
                     "initialTimeSource": "2014-06-30T22:00:00Z",
                     "featureInfoTemplate": {
-                        "name":"{{GRAY_INDEX}} W/m2"
+                        "name": "{{GRAY_INDEX}} W/m2"
                     }
                 }
             ]
         }
     ]
 }
-
 ```
-
 
 ## Setting the default date
 
-Use `initialTimeSource` to do this.  The allowed values are a valid ISO8601 datestring, "present", "start" and "end".
+Use `initialTimeSource` to do this. The allowed values are a valid ISO8601 datestring, "present", "start" and "end".
 
 ## For more
 

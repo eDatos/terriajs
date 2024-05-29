@@ -1,3 +1,4 @@
+# Update .prettierignore whenever this file changes
 docs/
 node_modules/
 .idea/
@@ -12,5 +13,12 @@ terriajs.pid
 /wwwroot/doc/
 /wwwroot/schema/
 /wwwroot/user-guide/
+/coverage/
 package-lock.json
 *.swp
+dist
+.history/
+ts-out/
+
+# Catalog index generation files
+catalog-index*.json

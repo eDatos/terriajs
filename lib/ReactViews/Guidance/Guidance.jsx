@@ -12,12 +12,12 @@ import Text from "../../Styled/Text";
 
 import GuidanceDot from "./GuidanceDot.jsx";
 
-const GuidanceProgress = props => {
-  const countArray = Array.from(Array(props.max).keys()).map(e => e++);
+const GuidanceProgress = (props) => {
+  const countArray = Array.from(Array(props.max).keys()).map((e) => e++);
   const countStep = props.step;
   return (
     <div className={Styles.indicatorWrapper}>
-      {countArray.map(count => {
+      {countArray.map((count) => {
         return (
           <div
             key={count}
@@ -40,7 +40,7 @@ const GuidanceContextModal = ({ children }) => {
   const { t } = useTranslation();
   return (
     <div className={Styles.context}>
-      <Text>{children}</Text>
+      <Text tallerHeight>{children}</Text>
       <button className={Styles.btn}>{t("general.next")}</button>
       {t("general.skip")}
       {/* ? */}

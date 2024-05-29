@@ -8,6 +8,7 @@
 .preview-chart-wrapper {
   position: relative;
   padding: 0;
+  min-height: 110px;
 
   :global {
     .line-chart text {
@@ -26,6 +27,10 @@
       stroke: $chart-preview-line-color;
       stroke-width: 1;
     }
+  }
+
+  .preview-chart {
+    padding-top: 1em;
   }
 }
 

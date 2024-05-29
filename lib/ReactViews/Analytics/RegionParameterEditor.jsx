@@ -6,15 +6,12 @@ import createReactClass from "create-react-class";
 
 import PropTypes from "prop-types";
 
-import ObserveModelMixin from "../ObserveModelMixin";
-
 import Styles from "./parameter-editors.scss";
 import RegionPicker, { getDisplayValue } from "./RegionPicker";
 import MapInteractionMode from "../../Models/MapInteractionMode";
 
 const RegionParameterEditor = createReactClass({
   displayName: "RegionParameterEditor",
-  mixins: [ObserveModelMixin],
 
   propTypes: {
     previewed: PropTypes.object,
@@ -60,14 +57,14 @@ const RegionParameterEditor = createReactClass({
  * @param {FunctionParameter} parameter Parameter.
  * @param {Object} previewed Previewed.
  */
-RegionParameterEditor.selectOnMap = function(viewState, parameter, previewed) {
+RegionParameterEditor.selectOnMap = function (viewState, parameter, previewed) {
   const terria = previewed.terria;
   // Cancel any feature picking already in progress.
   terria.pickedFeatures = undefined;
 
   const pickPointMode = new MapInteractionMode({
     message: "Select a region on the map",
-    onCancel: function() {
+    onCancel: function () {
       terria.mapInteractionModeStack.pop();
       viewState.openAddData();
     },

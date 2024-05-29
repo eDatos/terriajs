@@ -59,11 +59,11 @@ const Dropdown = createReactClass({
 
   removeListeners() {
     document.body.removeEventListener("click", this.hideList);
-    this.buttonElement.removeEventListener("click", this.nativeButtonListener);
+    this.buttonElement?.removeEventListener("click", this.nativeButtonListener);
     this.nativeButtonListener = undefined;
 
-    (this.scrollListeners || []).forEach(listenerElement =>
-      listenerElement.removeEventListener("scroll", this.hideList)
+    (this.scrollListeners || []).forEach((listenerElement) =>
+      listenerElement?.removeEventListener("scroll", this.hideList)
     );
     this.scrollListeners = undefined;
   },
@@ -94,7 +94,7 @@ const Dropdown = createReactClass({
 
     // Unfortunately we need to add a native event listener because the native event hits document.body before
     // the react event ever gets triggered.
-    this.nativeButtonListener = event => {
+    this.nativeButtonListener = (event) => {
       event.stopPropagation();
       this.hideList();
     };
@@ -123,7 +123,7 @@ const Dropdown = createReactClass({
           type="button"
           onClick={this.onButtonClicked}
           className={classNames(this.props.theme.button, Styles.btnDropdown)}
-          ref={element => {
+          ref={(element) => {
             this.buttonElement = element;
           }}
           disabled={this.props.disabled}
@@ -138,40 +138,37 @@ const Dropdown = createReactClass({
             [isOpenStyle]: this.state.isOpen
           })}
         >
-          <For each="option" of={this.props.options} index="index">
+          {this.props.options.map((option, i) => (
             <li key={option[this.props.textProperty]}>
-              <Choose>
-                <When condition={option.href}>
-                  <a
-                    href={option.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={classNames(
-                      Styles.btnOption,
-                      this.props.theme.btnOption || "",
-                      { [Styles.isSelected]: option === this.props.selected }
-                    )}
-                    download={option.download}
-                  >
-                    {option[this.props.textProperty]}
-                  </a>
-                </When>
-                <Otherwise>
-                  <button
-                    type="button"
-                    className={classNames(
-                      Styles.btnOption,
-                      this.props.theme.btnOption || "",
-                      { [Styles.isSelected]: option === this.props.selected }
-                    )}
-                    onClick={() => this.select(option, index)}
-                  >
-                    {option[this.props.textProperty]}
-                  </button>
-                </Otherwise>
-              </Choose>
+              {option.href ? (
+                <a
+                  href={option.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={classNames(
+                    Styles.btnOption,
+                    this.props.theme.btnOption || "",
+                    { [Styles.isSelected]: option === this.props.selected }
+                  )}
+                  download={option.download}
+                >
+                  {option[this.props.textProperty]}
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  className={classNames(
+                    Styles.btnOption,
+                    this.props.theme.btnOption || "",
+                    { [Styles.isSelected]: option === this.props.selected }
+                  )}
+                  onClick={() => this.select(option, i)}
+                >
+                  {option[this.props.textProperty]}
+                </button>
+              )}
             </li>
-          </For>
+          ))}
         </ul>
       </div>
     );

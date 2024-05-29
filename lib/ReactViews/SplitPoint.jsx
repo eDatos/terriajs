@@ -13,7 +13,7 @@ const SplitPoint = createReactClass({
     return { component: null };
   },
   componentDidMount() {
-    this.props.loadComponent(component => this.setState({ component }));
+    this.props.loadComponent((component) => this.setState({ component }));
   },
   render() {
     const ChunkComponent = this.state.component;
@@ -24,4 +24,4 @@ const SplitPoint = createReactClass({
   }
 });
 
-module.exports = SplitPoint;
+export default SplitPoint;

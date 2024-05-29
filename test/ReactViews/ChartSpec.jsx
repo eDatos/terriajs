@@ -1,6 +1,5 @@
 "use strict";
 
-/*global expect,fail*/
 import React from "react";
 import { getMountedInstance } from "./MoreShallowTools";
 
@@ -8,8 +7,8 @@ import Chart from "../../lib/ReactViews/Custom/Chart/Chart";
 import ChartData from "../../lib/Charts/ChartData";
 import TableStructure from "../../lib/Map/TableStructure";
 
-describe("Chart", function() {
-  it("loads data from a url", function(done) {
+describe("Chart", function () {
+  it("loads data from a url", function (done) {
     // React.createElement(Chart, {
     //     key: 'chart',
     //     axisLabel: {
@@ -30,44 +29,50 @@ describe("Chart", function() {
     const instance = getMountedInstance(chart);
     instance
       .getChartDataPromise(undefined, instance.props.url)
-      .then(function(data) {
+      .then(function (data) {
         expect(data.length).toEqual(1);
         expect(data[0].points.length).toEqual(8);
       })
       .then(done)
-      .otherwise(fail);
+      .catch(fail);
   });
 
-  it("can have TableStructure data passed directly", function(done) {
+  it("can have TableStructure data passed directly", function (done) {
     const csvString = "x,y\r\n1,5\r\n3,8\r\n4,-3\r\n";
     const tableStructure = TableStructure.fromCsv(csvString);
     const chart = <Chart tableStructure={tableStructure} />;
     const instance = getMountedInstance(chart);
     instance
       .getChartDataPromise(instance.getChartParameters().data)
-      .then(function(data) {
+      .then(function (data) {
         expect(data.length).toEqual(1);
         expect(data[0].name).toEqual("y");
         expect(data[0].points.length).toEqual(3);
       })
       .then(done)
-      .otherwise(fail);
+      .catch(fail);
   });
 
-  it("can have an array of ChartData passed directly", function(done) {
-    const chartData = new ChartData([{ x: 2, y: 5 }, { x: 6, y: 2 }], {
-      name: "foo"
-    });
+  it("can have an array of ChartData passed directly", function (done) {
+    const chartData = new ChartData(
+      [
+        { x: 2, y: 5 },
+        { x: 6, y: 2 }
+      ],
+      {
+        name: "foo"
+      }
+    );
     const chart = <Chart data={[chartData]} />;
     const instance = getMountedInstance(chart);
     instance
       .getChartDataPromise(instance.getChartParameters().data)
-      .then(function(data) {
+      .then(function (data) {
         expect(data.length).toEqual(1);
         expect(data[0].name).toEqual("foo");
         expect(data[0].points.length).toEqual(2);
       })
       .then(done)
-      .otherwise(fail);
+      .catch(fail);
   });
 });

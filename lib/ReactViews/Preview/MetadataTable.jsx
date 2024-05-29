@@ -1,10 +1,7 @@
 import React from "react";
-
 import createReactClass from "create-react-class";
-
+import { isObservableArray } from "mobx";
 import PropTypes from "prop-types";
-
-import ObserveModelMixin from "../ObserveModelMixin";
 import Styles from "./metadata-table.scss";
 
 /**
@@ -12,44 +9,58 @@ import Styles from "./metadata-table.scss";
  */
 const MetadataTable = createReactClass({
   displayName: "MetadataTable",
-  mixins: [ObserveModelMixin],
 
   propTypes: {
     metadataItem: PropTypes.object.isRequired // A MetadataItem instance.
   },
 
-  render() {
+  renderDataCell(metadataItem, key) {
+    if (typeof metadataItem[key] === "object") {
+      return <MetadataTable metadataItem={metadataItem[key]} />;
+    } else if (
+      Array.isArray(metadataItem[key]) ||
+      isObservableArray(metadataItem[key])
+    ) {
+      return metadataItem[key].length > 0 && isJoinable(metadataItem[key])
+        ? metadataItem[key].join(", ")
+        : null;
+    } else return metadataItem[key];
+  },
+
+  renderObjectItemRow(key, i) {
     const metadataItem = this.props.metadataItem;
     return (
+      <tr key={i}>
+        <th className={Styles.name}>{key}</th>
+        <td className={Styles.value}>
+          {this.renderDataCell(metadataItem, key)}
+        </td>
+      </tr>
+    );
+  },
+
+  render() {
+    const metadataItem = this.props.metadataItem;
+    const keys = Object.keys(metadataItem);
+    const isArr =
+      Array.isArray(metadataItem) || isObservableArray(metadataItem);
+    if (keys.length === 0 && !isArr) return null;
+
+    return (
       <div className={Styles.root}>
-        <If condition={metadataItem.items.length > 0}>
-          <table>
-            <tbody>
-              <For each="item" index="i" of={metadataItem.items}>
-                <tr key={i}>
-                  <th className={Styles.name}>{item.name}</th>
-                  <td className={Styles.value}>
-                    <Choose>
-                      <When condition={item.items.length > 0}>
-                        <MetadataTable metadataItem={item} />
-                      </When>
-                      <When condition={Array.isArray(item.value)}>
-                        <If
-                          condition={
-                            item.value.length > 0 && isJoinable(item.value)
-                          }
-                        >
-                          {item.value.join(", ")}
-                        </If>
-                      </When>
-                      <Otherwise>{item.value}</Otherwise>
-                    </Choose>
-                  </td>
-                </tr>
-              </For>
-            </tbody>
-          </table>
-        </If>
+        <table>
+          <tbody>
+            {isArr && metadataItem.length > 0 && isJoinable(metadataItem) && (
+              <tr>
+                <td>{metadataItem.join(", ")}</td>
+              </tr>
+            )}
+
+            {!isArr &&
+              keys.length > 0 &&
+              keys.map((key, i) => this.renderObjectItemRow(key, i))}
+          </tbody>
+        </table>
       </div>
     );
   }

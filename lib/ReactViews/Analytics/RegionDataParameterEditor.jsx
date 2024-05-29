@@ -7,15 +7,14 @@ import PropTypes from "prop-types";
 import defined from "terriajs-cesium/Source/Core/defined";
 import knockout from "terriajs-cesium/Source/ThirdParty/knockout";
 import VarType from "../../Map/VarType";
-import ObserveModelMixin from "../ObserveModelMixin";
 import CatalogItem from "../DataCatalog/CatalogItem";
 import CatalogGroup from "../DataCatalog/CatalogGroup";
 
 import Styles from "./parameter-editors.scss";
+import CommonStrata from "../../Models/Definition/CommonStrata";
 
 const RegionDataParameterEditor = createReactClass({
   displayName: "RegionDataParameterEditor",
-  mixins: [ObserveModelMixin],
 
   propTypes: {
     previewed: PropTypes.object,
@@ -37,7 +36,7 @@ const RegionDataParameterEditor = createReactClass({
   },
 
   setValue(value) {
-    this.props.parameter.value = value;
+    this.props.parameter.setValue(CommonStrata.user, value);
   },
 
   regionProvider() {
@@ -55,16 +54,20 @@ const RegionDataParameterEditor = createReactClass({
     if (newValue) {
       value[column.name] = {
         regionProvider: this.regionProvider(),
-        regionColumn: catalogItem.regionMapping.tableStructure.getColumnWithNameOrId(
-          catalogItem.regionMapping.regionDetails[0].columnName
-        ),
+        regionColumn:
+          catalogItem.regionMapping.tableStructure.getColumnWithNameOrId(
+            catalogItem.regionMapping.regionDetails[0].columnName
+          ),
         valueColumn: column
       };
 
       // If only one dataset can be active at a time, deactivate all others.
       if (this.props.parameter.singleSelect) {
         for (const columnName in value) {
-          if (value.hasOwnProperty(columnName) && columnName !== column.name) {
+          if (
+            Object.prototype.hasOwnProperty.call(value, columnName) &&
+            columnName !== column.name
+          ) {
             value[columnName] = false;
           }
         }
@@ -96,9 +99,10 @@ const RegionDataParameterEditor = createReactClass({
       ) {
         value[column.name] = {
           regionProvider: this.regionProvider(),
-          regionColumn: catalogItem.regionMapping.tableStructure.getColumnWithNameOrId(
-            catalogItem.regionMapping.regionDetails[0].columnName
-          ),
+          regionColumn:
+            catalogItem.regionMapping.tableStructure.getColumnWithNameOrId(
+              catalogItem.regionMapping.regionDetails[0].columnName
+            ),
           valueColumn: column
         };
       }
@@ -186,11 +190,7 @@ const RegionDataParameterEditor = createReactClass({
       return (
         <div className={Styles.data}>
           <ul className={Styles.tree}>
-            <For
-              each="catalogItem"
-              index="i"
-              of={this.catalogItemsWithMatchingRegion()}
-            >
+            {this.catalogItemsWithMatchingRegion().map((catalogItem, i) => (
               <CatalogGroup
                 key={catalogItem.uniqueId}
                 text={catalogItem.name}
@@ -201,7 +201,7 @@ const RegionDataParameterEditor = createReactClass({
               >
                 {this.renderItemChildren(catalogItem)}
               </CatalogGroup>
-            </For>
+            ))}
           </ul>
         </div>
       );

@@ -2,34 +2,32 @@
 
 import React from "react";
 
-import createReactClass from "create-react-class";
-
 import PropTypes from "prop-types";
 
 import defined from "terriajs-cesium/Source/Core/defined";
 
-import ObserveModelMixin from "../ObserveModelMixin";
 import Styles from "./parameter-editors.scss";
 
 import CesiumMath from "terriajs-cesium/Source/Core/Math";
 import Ellipsoid from "terriajs-cesium/Source/Core/Ellipsoid";
 import UserDrawing from "../../Models/UserDrawing";
 import { withTranslation } from "react-i18next";
+import { observer } from "mobx-react";
+import { runInAction } from "mobx";
+import CommonStrata from "../../Models/Definition/CommonStrata";
 
-const PolygonParameterEditor = createReactClass({
-  displayName: "PolygonParameterEditor",
-  mixins: [ObserveModelMixin],
-
-  propTypes: {
+@observer
+class PolygonParameterEditor extends React.Component {
+  static propTypes = {
     previewed: PropTypes.object,
     parameter: PropTypes.object,
     viewState: PropTypes.object,
     t: PropTypes.func.isRequired
-  },
+  };
 
   setValueFromText(e) {
     PolygonParameterEditor.setValueFromText(e, this.props.parameter);
-  },
+  }
 
   selectPolygonOnMap() {
     selectOnMap(
@@ -37,7 +35,7 @@ const PolygonParameterEditor = createReactClass({
       this.props.viewState,
       this.props.parameter
     );
-  },
+  }
 
   render() {
     const { t } = this.props;
@@ -46,12 +44,12 @@ const PolygonParameterEditor = createReactClass({
         <input
           className={Styles.field}
           type="text"
-          onChange={this.setValueFromText}
+          onChange={this.setValueFromText.bind(this)}
           value={getDisplayValue(this.props.parameter.value)}
         />
         <button
           type="button"
-          onClick={this.selectPolygonOnMap}
+          onClick={this.selectPolygonOnMap.bind(this)}
           className={Styles.btnSelector}
         >
           {t("analytics.clickToDrawPolygon")}
@@ -59,15 +57,15 @@ const PolygonParameterEditor = createReactClass({
       </div>
     );
   }
-});
+}
 
 /**
  * Triggered when user types value directly into field.
  * @param {String} e Text that user has entered manually.
  * @param {FunctionParameter} parameter Parameter to set value on.
  */
-PolygonParameterEditor.setValueFromText = function(e, parameter) {
-  parameter.value = [JSON.parse(e.target.value)];
+PolygonParameterEditor.setValueFromText = function (e, parameter) {
+  parameter.setValue(CommonStrata.user, [JSON.parse(e.target.value)]);
 };
 
 /**
@@ -109,11 +107,10 @@ function getPointsLongLats(pointEntities, terria) {
   for (let i = 0; i < pointEnts.length; i++) {
     const currentPoint = pointEnts[i];
     const currentPointPos = currentPoint.position.getValue(
-      terria.clock.currentTime
+      terria.timelineClock.currentTime
     );
-    const cartographic = Ellipsoid.WGS84.cartesianToCartographic(
-      currentPointPos
-    );
+    const cartographic =
+      Ellipsoid.WGS84.cartesianToCartographic(currentPointPos);
     const points = [];
     points.push(CesiumMath.toDegrees(cartographic.longitude));
     points.push(CesiumMath.toDegrees(cartographic.latitude));
@@ -137,17 +134,24 @@ function getPointsLongLats(pointEntities, terria) {
 export function selectOnMap(terria, viewState, parameter) {
   const userDrawing = new UserDrawing({
     terria: terria,
-    onPointClicked: function(pointEntities) {
-      parameter.value = [getPointsLongLats(pointEntities, terria)];
+    onPointClicked: function (pointEntities) {
+      runInAction(() => {
+        parameter.setValue(CommonStrata.user, [
+          getPointsLongLats(pointEntities, terria)
+        ]);
+      });
     },
-    onCleanUp: function() {
+    onCleanUp: function () {
       viewState.openAddData();
     },
-    onPointMoved: function(customDataSource) {
-      parameter.value = [getPointsLongLats(customDataSource, terria)];
+    onPointMoved: function (customDataSource) {
+      runInAction(() => {
+        parameter.setValue(CommonStrata.user, [
+          getPointsLongLats(customDataSource, terria)
+        ]);
+      });
     }
   });
-  viewState.explorerPanelIsVisible = false;
   userDrawing.enterDrawMode();
 }
 
