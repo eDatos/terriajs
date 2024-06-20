@@ -197,7 +197,7 @@ const SidePanel = observer<React.FC<SidePanelProps>>(
         </div>
         <Box
           styledMinHeight={"0"}
-          flex={1}
+          flex={"1 1 0px"}
           css={`
             overflow: hidden;
           `}
