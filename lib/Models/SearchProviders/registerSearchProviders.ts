@@ -1,6 +1,7 @@
 import AustralianGazetteerSearchProvider from "./AustralianGazetteerSearchProvider";
 import BingMapsSearchProvider from "./BingMapsSearchProvider";
 import CesiumIonSearchProvider from "./CesiumIonSearchProvider";
+import PeliasSearchProvider from "./PeliasSearchProvider";
 import NominatimSearchProvider from "./NominatimSearchProvider";
 import SearchProviderFactory from "./SearchProviderFactory";
 
@@ -13,6 +14,11 @@ export default function registerSearchProviders() {
   SearchProviderFactory.register(
     CesiumIonSearchProvider.type,
     CesiumIonSearchProvider
+  );
+
+  SearchProviderFactory.register(
+    PeliasSearchProvider.type,
+    PeliasSearchProvider
   );
 
   SearchProviderFactory.register(

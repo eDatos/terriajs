@@ -18,6 +18,7 @@ import CommonStrata from "../Definition/CommonStrata";
 
 interface PeliasGeocodeResultFeature {
   bbox: [number, number, number, number];
+  geometry: { coordinates: [ number, number ] };
   properties: { label: string };
 }
 
@@ -89,15 +90,19 @@ export default class PeliasSearchProvider extends LocationSearchProviderMixin(
       }
 
       searchResults.results = response.features.map<SearchResult>((feature) => {
-        const [w, s, e, n] = feature.bbox;
+       
+        let [longitude, latitude] = feature.geometry.coordinates;
+        const MARGIN = 0.001;
+        const [w, s, e, n] = feature.bbox ? feature.bbox : [longitude - MARGIN, latitude - MARGIN, longitude + MARGIN, latitude + MARGIN];
+        [longitude, latitude] = feature.geometry.coordinates ? feature.geometry.coordinates : [(s + n) / 2, (e + w) / 2];
         const rectangle = Rectangle.fromDegrees(w, s, e, n);
 
         return new SearchResult({
           name: feature.properties.label,
           clickAction: createZoomToFunction(this, rectangle),
           location: {
-            latitude: (s + n) / 2,
-            longitude: (e + w) / 2
+            latitude: latitude,
+            longitude: longitude
           }
         });
       });
