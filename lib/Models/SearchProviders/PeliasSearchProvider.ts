@@ -72,7 +72,7 @@ export default class PeliasSearchProvider extends LocationSearchProviderMixin(
     let response: PeliasGeocodeResult;
     try {
       response = await loadJson<PeliasGeocodeResult>(
-        `${this.url}?text=${searchText}&access_token=${this.key}`
+        `${this.url}?text=${searchText}&layers=address`
       );
     } catch (_e) {
       searchResults.message = {
