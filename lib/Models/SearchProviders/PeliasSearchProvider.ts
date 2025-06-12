@@ -39,8 +39,6 @@ export default class PeliasSearchProvider extends LocationSearchProviderMixin(
     super(uniqueId, terria);
 
     makeObservable(this);
-
-    runInAction(() => {});
   }
 
   @override
