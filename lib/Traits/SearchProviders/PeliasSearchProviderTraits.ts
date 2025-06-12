@@ -4,7 +4,7 @@ import LocationSearchProviderTraits, {
   SearchProviderMapCenterTraits
 } from "./LocationSearchProviderTraits";
 
-export default class CesiumIonSearchProviderTraits extends mixTraits(
+export default class PeliasSearchProviderTraits extends mixTraits(
   LocationSearchProviderTraits,
   SearchProviderMapCenterTraits
 ) {

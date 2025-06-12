@@ -9,29 +9,29 @@ import {
 import loadJson from "../../Core/loadJson";
 import { applyTranslationIfExists } from "../../Language/languageHelpers";
 import LocationSearchProviderMixin from "../../ModelMixins/SearchProviders/LocationSearchProviderMixin";
-import CesiumIonSearchProviderTraits from "../../Traits/SearchProviders/CesiumIonSearchProviderTraits";
+import PeliasSearchProviderTraits from "../../Traits/SearchProviders/PeliasSearchProviderTraits";
 import CreateModel from "../Definition/CreateModel";
 import Terria from "../Terria";
 import SearchProviderResults from "./SearchProviderResults";
 import SearchResult from "./SearchResult";
 import CommonStrata from "../Definition/CommonStrata";
 
-interface CesiumIonGeocodeResultFeature {
+interface PeliasGeocodeResultFeature {
   bbox: [number, number, number, number];
   properties: { label: string };
 }
 
-interface CesiumIonGeocodeResult {
-  features: CesiumIonGeocodeResultFeature[];
+interface PeliasGeocodeResult {
+  features: PeliasGeocodeResultFeature[];
 }
 
-export default class CesiumIonSearchProvider extends LocationSearchProviderMixin(
-  CreateModel(CesiumIonSearchProviderTraits)
+export default class PeliasSearchProvider extends LocationSearchProviderMixin(
+  CreateModel(PeliasSearchProviderTraits)
 ) {
-  static readonly type = "cesium-ion-search-provider";
+  static readonly type = "pelias-search-provider";
 
   get type() {
-    return CesiumIonSearchProvider.type;
+    return PeliasSearchProvider.type;
   }
 
   constructor(uniqueId: string | undefined, terria: Terria) {
@@ -39,15 +39,7 @@ export default class CesiumIonSearchProvider extends LocationSearchProviderMixin
 
     makeObservable(this);
 
-    runInAction(() => {
-      if (this.terria.configParameters.cesiumIonAccessToken) {
-        this.setTrait(
-          CommonStrata.defaults,
-          "key",
-          this.terria.configParameters.cesiumIonAccessToken
-        );
-      }
-    });
+    runInAction(() => {});
   }
 
   @override
@@ -76,9 +68,9 @@ export default class CesiumIonSearchProvider extends LocationSearchProviderMixin
     searchResults.results.length = 0;
     searchResults.message = undefined;
 
-    let response: CesiumIonGeocodeResult;
+    let response: PeliasGeocodeResult;
     try {
-      response = await loadJson<CesiumIonGeocodeResult>(
+      response = await loadJson<PeliasGeocodeResult>(
         `${this.url}?text=${searchText}&access_token=${this.key}`
       );
     } catch (_e) {
@@ -114,7 +106,7 @@ export default class CesiumIonSearchProvider extends LocationSearchProviderMixin
 }
 
 function createZoomToFunction(
-  model: CesiumIonSearchProvider,
+  model: PeliasSearchProvider,
   rectangle: Rectangle
 ) {
   return function () {
