@@ -14,7 +14,7 @@ export default class PeliasSearchProviderTraits extends mixTraits(
     type: "string",
     name: "Key",
     description:
-      "The Cesium ION key. If not provided, will try to use the global cesium ion key."
+      "The EDATOS Terria api key."
   })
   key?: string;
 }

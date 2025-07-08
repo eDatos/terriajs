@@ -227,6 +227,8 @@ export interface ConfigParameters {
    * token will not be shared with others.
    */
   cesiumIonAllowSharingAddedAssets?: boolean;
+  /* An API key for the EDATOS Pelias API. This is used to access the EDATOS geocoding service. */
+  edatosTerriaApiKey?: string;
   /**
    * A [Bing Maps API key](https://msdn.microsoft.com/en-us/library/ff428642.aspx) used for requesting Bing Maps base maps and using the Bing Maps geocoder for searching. It is your responsibility to request a key and comply with all terms and conditions.
    */
@@ -545,6 +547,7 @@ export default class Terria {
     cesiumIonOAuth2ApplicationID: undefined,
     cesiumIonLoginTokenPersistence: "page",
     cesiumIonAllowSharingAddedAssets: false,
+    edatosTerriaApiKey: undefined,
     bingMapsKey: undefined,
     hideTerriaLogo: false,
     brandBarElements: undefined,

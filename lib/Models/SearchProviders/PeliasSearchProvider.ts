@@ -39,6 +39,16 @@ export default class PeliasSearchProvider extends LocationSearchProviderMixin(
     super(uniqueId, terria);
 
     makeObservable(this);
+
+    runInAction(() => {
+      if (this.terria.configParameters.edatosTerriaApiKey) {
+        this.setTrait(
+          CommonStrata.defaults,
+          "key",
+          this.terria.configParameters.edatosTerriaApiKey
+        );
+      }
+    });
   }
 
   @override
@@ -47,7 +57,7 @@ export default class PeliasSearchProvider extends LocationSearchProviderMixin(
       console.warn(
         `The ${applyTranslationIfExists(this.name, i18next)}(${
           this.type
-        }) geocoder will always return no results because a CesiumIon key has not been provided. Please get a CesiumIon key from ion.cesium.com, ensure it has geocoding permission and add it to searchProvider.key or parameters.cesiumIonAccessToken in config.json.`
+        }) geocoder must be called with an EDATOS api-key. Please get one and add it to searchProvider.key in config.json.`
       );
     }
   }
@@ -70,7 +80,8 @@ export default class PeliasSearchProvider extends LocationSearchProviderMixin(
     let response: PeliasGeocodeResult;
     try {
       response = await loadJson<PeliasGeocodeResult>(
-        `${this.url}?text=${searchText}&layers=address`
+        `${this.url}?text=${searchText}`,
+        { 'api-key': this.key }
       );
     } catch (_e) {
       searchResults.message = {
