@@ -183,7 +183,9 @@ class Compass extends PureComponent<PropTypes, IStateTypes> {
       active: false,
       activeForTransition: false
     };
+  }
 
+  componentDidMount() {
     when(
       () => isDefined(this.cesiumViewer),
       () => this.cesiumLoaded()
