@@ -45,10 +45,10 @@ Note: relative paths will be resolved to the base URL of client-side config URL 
 
 For example a map hosted at http://something.com/map
 
--   will have default `configUrl = http://something.com/map/config.json`
--   therefore will resolve `initFragmentPaths` to `http://something.com/map`
--   if using default `initFragmentPaths = ["init"]`
-    -   init fragments will be resolved to `http://something.com/map/init`
+- will have default `configUrl = http://something.com/map/config.json`
+- therefore will resolve `initFragmentPaths` to `http://something.com/map`
+- if using default `initFragmentPaths = ["init"]`
+  - init fragments will be resolved to `http://something.com/map/init`
 
 ### `v7initializationUrls`
 
@@ -181,32 +181,32 @@ Configuration of items to appear in the search bar
 
 ### ErrorServiceOptions
 
-| Name          | Required | Type       | Default     | Description                                                                                                                                                                                                                                                    |
-| ------------- | -------- | ---------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| provider      | yes      | **string** | `undefined` | A string identifying the error service provider to use. Currently only `rollbar` is supported.                                                                                                                                                                 |
-| configuration | no       | **any**    | `undefined` | The configuration object to pass as constructor parameters to the error service provider instance. See the [provider implementation](https://github.com/TerriaJS/terriajs/blob/main/lib/Models/ErrorServiceProviders/) for supported configuration parameters. |
+| Name          | Required | Type       | Default     | Description                                                            |
+| ------------- | -------- | ---------- | ----------- | ---------------------------------------------------------------------- |
+| provider      | no       | **string** | `undefined` | A string identifying the error service provider.                       |
+| configuration | no       | **any**    | `undefined` | The configuration object to be used when initializing an ErrorService. |
 
 **Example**
 
 ```json
 {
-    "enabled": true,
-    "debug": false,
-    "react": {
-        "useSuspense": false
-    },
-    "languages": {
-        "en": "english",
-        "de": "deutsch"
-    },
-    "fallbackLanguage": "en",
-    "changeLanguageOnStartWhen": [
-        "querystring",
-        "localStorage",
-        "navigator",
-        "htmlTag"
-    ],
-    "lookupCookie": "i18next"
+  "enabled": true,
+  "debug": false,
+  "react": {
+    "useSuspense": false
+  },
+  "languages": {
+    "en": "english",
+    "de": "deutsch"
+  },
+  "fallbackLanguage": "en",
+  "changeLanguageOnStartWhen": [
+    "querystring",
+    "localStorage",
+    "navigator",
+    "htmlTag"
+  ],
+  "lookupCookie": "i18next"
 }
 ```
 
@@ -225,10 +225,10 @@ Configuration of maps to appear in "Related Maps" menu panel
 
 ```json
 {
-    "imageUrl": "https://terria-catalogs-public.storage.googleapis.com/misc/related-maps/nationalmap.jpg",
-    "url": "http://nationalmap.gov.au/",
-    "title": "NationalMap",
-    "description": "The NationalMap is a website for map-based access to spatial data from Australian government agencies. It is an initiative of the Australian Government's Department of the Prime Minister and Cabinet and the software has been developed by Data61 working closely with the Department of the Prime Minister and Cabinet, Geoscience Australia and other government agencies."
+  "imageUrl": "https://terria-catalogs-public.storage.googleapis.com/misc/related-maps/nationalmap.jpg",
+  "url": "http://nationalmap.gov.au/",
+  "title": "NationalMap",
+  "description": "The NationalMap is a website for map-based access to spatial data from Australian government agencies. It is an initiative of the Australian Government's Department of the Prime Minister and Cabinet and the software has been developed by Data61 working closely with the Department of the Prime Minister and Cabinet, Geoscience Australia and other government agencies."
 }
 ```
 
@@ -240,14 +240,14 @@ Credits/Attribution shown at the bottom of the map. Supports internationalizatio
 
 ```json
 [
-    {
-        "text": "map.extraCreditLinks.dataAttribution",
-        "url": "about.html#data-attribution"
-    },
-    {
-        "text": "map.extraCreditLinks.disclaimer",
-        "url": "about.html#disclaimer"
-    }
+  {
+    "text": "map.extraCreditLinks.dataAttribution",
+    "url": "https://terria.io/attributions"
+  },
+  {
+    "text": "map.extraCreditLinks.termsOfUse",
+    "url": "https://terria.io/demo-terms"
+  }
 ]
 ```
 
@@ -265,3 +265,4 @@ search provider values.
 | flightDurationSeconds | no       | **number**    | `1.5`                          | The duration of the camera flight to an entered location, in seconds.                             |
 | minCharacters         | no       | **number**    | 3                              | Minimum number of characters required for search to start                                         |
 | boundingBoxLimit      | no       | **Rectangle** | `Cesium.Rectangle.MAX_VALUE`   | Bounding box limits for the search results {west, south, east, north}                             |
+| showSearchInCatalog   | no       | **boolean**   | true                           | True to show "Search in Catalog" link in location search results.                                 |
