@@ -41,3 +41,6 @@ yarn.lock
 
 # Ignore some files
 doc/acknowledgements/attributions.md
+
+# Intellij
+/*.iml
