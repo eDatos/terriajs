@@ -3,6 +3,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "preserveSymlinks": true,
     "outDir": "dist",
     "types": [
       "terriajs-cesium",
