@@ -4,6 +4,7 @@ import { MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import defined from "terriajs-cesium/Source/Core/defined";
 import addedByUser from "../../Core/addedByUser";
+import { applyTranslationIfExists } from "../../Language/languageHelpers";
 import { DataSourceAction } from "../../Core/AnalyticEvents/analyticEvents";
 import getPath from "../../Core/getPath";
 import CatalogFunctionMixin from "../../ModelMixins/CatalogFunctionMixin";
@@ -32,7 +33,7 @@ export default observer(function DataCatalogItem({
   onActionButtonClicked,
   removable
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const STATE_TO_TITLE = {
     [ButtonState.Loading]: t("catalogItem.loading"),
     [ButtonState.Remove]: t("catalogItem.removeFromMap"),
@@ -100,7 +101,7 @@ export default observer(function DataCatalogItem({
     <CatalogItem
       onTextClick={setPreviewedItem}
       selected={isSelected}
-      text={item.nameInCatalog!}
+      text={applyTranslationIfExists(item.nameInCatalog!, i18n)}
       isPrivate={item.isPrivate}
       title={getPath(item, " -> ")}
       btnState={btnState}

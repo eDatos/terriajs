@@ -4,6 +4,7 @@ import { observer } from "mobx-react";
 import { useTranslation } from "react-i18next";
 import addedByUser from "../../Core/addedByUser";
 import getPath from "../../Core/getPath";
+import { applyTranslationIfExists } from "../../Language/languageHelpers";
 import removeUserAddedData from "../../Models/Catalog/removeUserAddedData";
 import ViewState from "../../ReactViewModels/ViewState";
 import { BaseModel } from "../../Models/Definition/Model";
@@ -53,7 +54,7 @@ const DataCatalogGroup: React.FC<PropsType> = observer((props) => {
     isTopLevel
   } = props;
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isOpenLocal, setIsOpenLocal] = useState(false);
 
   const isOpen = useCallback(() => {
@@ -81,7 +82,10 @@ const DataCatalogGroup: React.FC<PropsType> = observer((props) => {
 
   const getNameOrPrettyUrl = useCallback(() => {
     // Grab a name via nameInCatalog, if it's a blank string, try and generate one from the url
-    const nameInCatalog = group.nameInCatalog || "";
+    const nameInCatalog = applyTranslationIfExists(
+      group.nameInCatalog || "",
+      i18n
+    );
     if (nameInCatalog !== "") {
       return nameInCatalog;
     }
