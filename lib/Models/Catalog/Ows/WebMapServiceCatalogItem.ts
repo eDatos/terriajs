@@ -319,7 +319,8 @@ class WebMapServiceCatalogItem
         .setSearch({
           service: "WMS",
           version: this.useWmsVersion130 ? "1.3.0" : "1.1.1",
-          request: "GetCapabilities"
+          request: "GetCapabilities",
+          ...(i18next.language ? { AcceptLanguages: i18next.language } : {})
         })
         .toString();
     } else {
@@ -373,6 +374,9 @@ class WebMapServiceCatalogItem
       new URI(this.url)
     );
 
+    if (i18next.language) {
+      baseUrl.addSearch("LANGUAGE", i18next.language);
+    }
     return baseUrl.toString();
   }
 
@@ -394,6 +398,9 @@ class WebMapServiceCatalogItem
       .addQuery("styles", encodeURIComponent(styleId));
     if (time) {
       uri.addQuery("time", time);
+    }
+    if (i18next.language) {
+      uri.addQuery("LANGUAGE", i18next.language);
     }
     return uri.toString();
   }
