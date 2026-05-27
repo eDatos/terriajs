@@ -1,3 +1,4 @@
+import i18next from "i18next";
 import { uniq } from "lodash-es";
 import { runInAction, toJS } from "mobx";
 import Ellipsoid from "terriajs-cesium/Source/Core/Ellipsoid";
@@ -49,8 +50,20 @@ function buildBaseShareUrl(
   }
 
   uri.addSearch(hashParams);
+  uri.fragment(uri.query()).query("");
 
-  return uri.fragment(uri.query()).query("").toString();
+  const supportedLanguages = terria.configParameters.languageConfiguration?.languages;
+  const currentLang = i18next.resolvedLanguage ?? i18next.language;
+  if (
+    currentLang &&
+    supportedLanguages &&
+    Object.keys(supportedLanguages).length > 1 &&
+    Object.prototype.hasOwnProperty.call(supportedLanguages, currentLang)
+  ) {
+    uri.addSearch({ lng: currentLang });
+  }
+
+  return uri.toString();
 }
 
 /**
