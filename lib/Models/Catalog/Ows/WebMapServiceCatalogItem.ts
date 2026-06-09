@@ -315,12 +315,16 @@ class WebMapServiceCatalogItem
         this.uri.clone()
       );
 
+      const lng = i18next.resolvedLanguage ?? i18next.language;
+      const fallbackLng = Array.isArray(i18next.options.fallbackLng)
+        ? i18next.options.fallbackLng[0]
+        : (i18next.options.fallbackLng as string);
       return baseUrl
         .setSearch({
           service: "WMS",
           version: this.useWmsVersion130 ? "1.3.0" : "1.1.1",
           request: "GetCapabilities",
-          ...(i18next.language ? { AcceptLanguages: i18next.language } : {})
+          ...(lng ? { AcceptLanguages: `${lng} ${fallbackLng} *` } : {})
         })
         .toString();
     } else {
