@@ -103,7 +103,7 @@ export default observer(function DataCatalogItem({
       selected={isSelected}
       text={applyTranslationIfExists(item.nameInCatalog!, i18n)}
       isPrivate={item.isPrivate}
-      title={getPath(item, " -> ")}
+      title={getPath(item, " -> ", i18n)}
       btnState={btnState}
       onBtnClick={onBtnClicked}
       // All things are "removable" - meaning add and remove from workbench,

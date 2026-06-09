@@ -84,7 +84,7 @@ class Breadcrumbs extends Component {
 
   render() {
     const parentGroups = this.props.previewed
-      ? getParentGroups(this.props.previewed)
+      ? getParentGroups(this.props.previewed, this.props.i18n)
       : undefined;
 
     return (

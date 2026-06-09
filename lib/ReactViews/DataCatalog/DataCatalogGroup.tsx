@@ -113,7 +113,7 @@ const DataCatalogGroup: React.FC<PropsType> = observer((props) => {
     <CatalogGroup
       text={getNameOrPrettyUrl()}
       isPrivate={group.isPrivate}
-      title={getPath(group, " → ")}
+      title={getPath(group, " → ", i18n)}
       topLevel={isTopLevel}
       open={isOpen()}
       loading={group.isLoading || group.isLoadingMembers}
