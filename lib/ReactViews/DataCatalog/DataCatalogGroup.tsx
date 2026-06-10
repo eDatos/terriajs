@@ -7,6 +7,7 @@ import getPath from "../../Core/getPath";
 import { applyTranslationIfExists } from "../../Language/languageHelpers";
 import removeUserAddedData from "../../Models/Catalog/removeUserAddedData";
 import ViewState from "../../ReactViewModels/ViewState";
+import Result from "../../Core/Result";
 import { BaseModel } from "../../Models/Definition/Model";
 import CatalogGroup from "./CatalogGroup";
 import DataCatalogMember from "./DataCatalogMember";
@@ -24,7 +25,7 @@ interface GroupModel extends BaseModel {
   displayGroup?: boolean;
   members: any[];
   memberModels: any[];
-  loadMembers: () => void;
+  loadMembers: () => Promise<Result<void>>;
   nameInCatalog?: string;
   url?: string;
   uniqueId: string;
@@ -100,14 +101,18 @@ const DataCatalogGroup: React.FC<PropsType> = observer((props) => {
       () => [group, isOpen()],
       ([currentGroup, isCurrentlyOpen]) => {
         if (isCurrentlyOpen && currentGroup) {
-          (currentGroup as GroupModel).loadMembers();
+          // Surface load failures (e.g. WMS GetCapabilities ServiceException) to
+          // the user instead of letting them fail silently in the console.
+          (currentGroup as GroupModel).loadMembers().then((result) => {
+            result.raiseError(viewState.terria);
+          });
         }
       },
       { equals: comparer.shallow, fireImmediately: true }
     );
 
     return () => cleanupLoadMembersReaction();
-  }, [group, isOpen]);
+  }, [group, isOpen, viewState]);
 
   return (
     <CatalogGroup
