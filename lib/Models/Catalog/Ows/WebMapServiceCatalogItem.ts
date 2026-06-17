@@ -324,7 +324,7 @@ class WebMapServiceCatalogItem
           service: "WMS",
           version: this.useWmsVersion130 ? "1.3.0" : "1.1.1",
           request: "GetCapabilities",
-          ...(lng ? { AcceptLanguages: `${lng} ${fallbackLng} *` } : {})
+          ...(lng ? { AcceptLanguages: `${lng} ${fallbackLng}` } : {})
         })
         .toString();
     } else {
