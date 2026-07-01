@@ -58,10 +58,14 @@ export default async function addUserCatalogMember(
     }
     return newCatalogItem;
   } catch (e: any) {
-    terria.raiseErrorToUser(e, {
-      title: i18next.t("models.userData.addingDataErrorTitle"),
-      message: i18next.t("models.userData.addingDataErrorTitle")
-    });
+    terria.raiseErrorToUser(
+      e,
+      {
+        title: i18next.t("models.userData.addingDataErrorTitle"),
+        message: i18next.t("models.userData.addingDataErrorTitle")
+      },
+      true
+    );
     return e;
   }
 }
