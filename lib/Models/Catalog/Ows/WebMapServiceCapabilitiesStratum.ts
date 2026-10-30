@@ -261,8 +261,8 @@ export default class WebMapServiceCapabilitiesStratum extends LoadableStratum(
           let legendOptions =
             "fontName:Courier;fontStyle:bold;fontSize:12;forceLabels:on;fontAntiAliasing:true;labelMargin:5";
 
-          // Geoserver fontColor must be a hex value - use `textLight` theme colour
-          let fontColor = terriaTheme.textLight.split("#")?.[1];
+          // Geoserver fontColor must be a hex value
+          let fontColor = terriaTheme.textBlack.split("#")?.[1];
           if (isDefined(fontColor)) {
             // If fontColor is a 3-character hex -> turn into 6
             if (fontColor.length === 3) {
